@@ -45,6 +45,8 @@ async function resolveExpectedSha256(bundle: ReleaseAppBundle): Promise<string |
 }
 
 async function downloadAndExtractBundle(appDir: string, bundle: ReleaseAppBundle): Promise<void> {
+  // Use a sibling temp dir so rename is on the same filesystem (avoids EXDEV).
+  const stagingDir = `${appDir}.installing-${process.pid}`;
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "cabinet-app-"));
   const archivePath = path.join(tempDir, "cabinet-app.tgz");
 
@@ -79,10 +81,9 @@ async function downloadAndExtractBundle(appDir: string, bundle: ReleaseAppBundle
       throw new Error(`Bundle SHA-256 mismatch (expected ${expectedHash}, got ${actualHash})`);
     }
 
-    fs.rmSync(appDir, { recursive: true, force: true });
-    fs.mkdirSync(appDir, { recursive: true });
+    fs.mkdirSync(stagingDir, { recursive: true });
 
-    const result = spawnSync("tar", ["-xzf", archivePath, "-C", appDir, "--no-same-owner"], {
+    const result = spawnSync("tar", ["-xzf", archivePath, "-C", stagingDir, "--no-same-owner"], {
       stdio: "inherit",
     });
     if (result.status !== 0) {
@@ -94,15 +95,21 @@ async function downloadAndExtractBundle(appDir: string, bundle: ReleaseAppBundle
       path.join("server", "cabinet-daemon.cjs"),
       path.join(".next", "static"),
       path.join(".native", "node-pty", "package.json"),
-    ].filter((f) => !fs.existsSync(path.join(appDir, f)));
+    ].filter((f) => !fs.existsSync(path.join(stagingDir, f)));
 
     if (missing.length > 0) {
       throw new Error(`App bundle missing runtime files in ${appDir}: ${missing.join(", ")}`);
     }
+
+    // Atomic promotion: rename staging dir into place. If another process
+    // already finished installing, the existing appDir is replaced atomically.
+    fs.rmSync(appDir, { recursive: true, force: true });
+    fs.renameSync(stagingDir, appDir);
   } catch (err) {
     fs.rmSync(appDir, { recursive: true, force: true });
     throw err;
   } finally {
+    fs.rmSync(stagingDir, { recursive: true, force: true });
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 }
