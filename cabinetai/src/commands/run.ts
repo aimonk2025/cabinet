@@ -322,6 +322,7 @@ async function runCabinet(opts: {
 
   const daemonEnv = {
     ...appEnv,
+    HOME: os.homedir(),
     NODE_PATH: [path.join(appDir, ".native"), process.env.NODE_PATH].filter(Boolean).join(path.delimiter),
   };
 
