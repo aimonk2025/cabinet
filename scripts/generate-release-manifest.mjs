@@ -19,7 +19,11 @@ const tag = readArg("tag", `v${version}`);
 const outputPath = readArg("output", path.join(process.cwd(), "cabinet-release.json"));
 const gitCommit = readArg("git-commit", process.env.GITHUB_SHA || undefined);
 const releaseDate = readArg("release-date", new Date().toISOString());
-const repositoryUrl = "https://github.com/hilash/cabinet";
+const repositoryUrl = (
+  readArg("repository-url") ||
+  (process.env.GITHUB_REPOSITORY && `https://github.com/${process.env.GITHUB_REPOSITORY}`) ||
+  "https://github.com/hilash/cabinet"
+).replace(/\.git$/, "");
 const appBundleKeys = ["darwin-arm64", "darwin-x64", "linux-arm64", "linux-x64"];
 
 function appBundleAssetName(key, tag) {
