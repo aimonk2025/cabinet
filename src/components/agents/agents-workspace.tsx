@@ -20,6 +20,7 @@ import {
   Save,
   Send,
   Settings,
+  Square,
   Trash2,
   X,
   Zap,
@@ -55,6 +56,7 @@ import { AgentRow } from "@/components/agents/agent-row";
 import {
   appendConversationCabinetPath,
 } from "@/lib/agents/conversation-identity";
+import { stopConversation } from "@/components/tasks/board/board-actions";
 import { cronToHuman } from "@/lib/agents/cron-utils";
 import { SchedulePicker } from "@/components/mission-control/schedule-picker";
 import { useTreeStore } from "@/stores/tree-store";
@@ -425,6 +427,7 @@ export function AgentsWorkspace({
     string | undefined
   >(undefined);
   const [selectedConversation, setSelectedConversation] = useState<ConversationDetail | null>(null);
+  const [stoppingConversation, setStoppingConversation] = useState(false);
   const [settingsTarget, setSettingsTarget] = useState<SettingsTarget>(null);
   const [settingsAgentCabinetPath, setSettingsAgentCabinetPath] = useState<string | undefined>(undefined);
   const [settingsPersona, setSettingsPersona] = useState<AgentListItem | null>(null);
@@ -2293,6 +2296,32 @@ export function AgentsWorkspace({
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-1.5">
+                  {activeConversationMeta.status === "running" &&
+                    !activeConversationMeta.awaitingInput && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 gap-1 text-[11px] text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+                      disabled={stoppingConversation}
+                      onClick={async () => {
+                        try {
+                          setStoppingConversation(true);
+                          await stopConversation(
+                            activeConversationMeta.id,
+                            activeConversationMeta.cabinetPath
+                          );
+                          await refreshConversations();
+                        } catch (e) {
+                          console.error(e);
+                        } finally {
+                          setStoppingConversation(false);
+                        }
+                      }}
+                    >
+                      <Square className="h-3 w-3 fill-current" />
+                      Stop
+                    </Button>
+                  )}
                   {activeConversationMeta.trigger === "job" && (
                     <Button
                       variant="ghost"

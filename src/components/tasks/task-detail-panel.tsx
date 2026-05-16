@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Maximize, Minimize, X } from "lucide-react";
+import { ArrowUpRight, Maximize, Minimize, Square, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
@@ -9,6 +9,7 @@ import { TaskComposeBody } from "@/components/tasks/task-compose-body";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import { useSideDrawer } from "@/hooks/use-side-drawer";
 import { Button } from "@/components/ui/button";
+import { stopConversation } from "@/components/tasks/board/board-actions";
 import { ProviderGlyph } from "@/components/agents/provider-glyph";
 import { useProviderIcon } from "@/hooks/use-provider-icons";
 import { formatEffortName } from "@/lib/agents/runtime-options";
@@ -121,6 +122,7 @@ export function TaskDetailPanel() {
   // scrolling inside the conversation. Callback ref so it binds when the
   // node actually mounts.
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  const [stopping, setStopping] = useState(false);
   const scrollCleanupRef = useRef<(() => void) | null>(null);
   const setPanelScrollRoot = useCallback((node: HTMLDivElement | null) => {
     scrollCleanupRef.current?.();
@@ -166,6 +168,31 @@ export function TaskDetailPanel() {
   // compose and conversation header variants.
   const actions = (
     <div className="ms-auto flex shrink-0 items-center gap-1">
+      {!isCompose &&
+      conversation &&
+      conversation.status === "running" &&
+      !conversation.awaitingInput ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 shrink-0 gap-1 px-2 text-[11px] text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+          disabled={stopping}
+          onClick={async () => {
+            try {
+              setStopping(true);
+              await stopConversation(conversation.id, conversation.cabinetPath);
+            } catch (e) {
+              console.error("[task-panel] stop failed", e);
+            } finally {
+              setStopping(false);
+            }
+          }}
+          title={t("tasks:conversation.sendSigterm")}
+        >
+          <Square className="size-3 fill-current" />
+          Stop
+        </Button>
+      ) : null}
       {!isCompose && conversation ? (
         <Button
           variant="ghost"
