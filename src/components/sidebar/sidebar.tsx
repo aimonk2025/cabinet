@@ -58,8 +58,9 @@ function clamp(value: number, min: number, max: number) {
 }
 
 export function Sidebar() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const isMobile = useIsMobile();
+  const brandWord = locale === "en" ? "" : t("sidebar:brandWord");
   const collapsed = useAppStore((s) => s.sidebarCollapsed);
   const setCollapsed = useAppStore((s) => s.setSidebarCollapsed);
   const section = useAppStore((s) => s.section);
@@ -182,17 +183,32 @@ export function Sidebar() {
           style={{ width: panelWidth }}
         >
         <div className="sidebar-header flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-1">
-            <NavArrows />
+          <div className="flex items-center gap-0.5">
             <button
               onClick={() => setSection({ type: "home" })}
-              className="group ms-1 flex items-center gap-1.5 rounded px-1 font-logo text-[22px] italic tracking-[-0.01em] text-foreground hover:text-foreground/80 hover:bg-accent/60 transition-colors cursor-pointer"
+              className="group flex items-center gap-1.5 rounded px-1 font-logo text-[22px] italic tracking-[-0.01em] text-foreground hover:text-foreground/80 hover:bg-accent/60 transition-colors cursor-pointer"
               title={t("sidebar:goHome")}
               aria-label={t("sidebar:goHome")}
             >
-              cabinet
+              <span className="brand-en">cabinet</span>
+              {brandWord && (
+                <span
+                  className={cn(
+                    // Same wordmark face as the help-page titles
+                    // (`.font-logo italic` → Cardo in Hebrew/RTL).
+                    "font-logo italic tracking-tight",
+                    // CJK glyphs render visually larger / denser than the
+                    // Latin logo, so dial the size down for those scripts.
+                    locale.startsWith("zh") ? "text-[14px]" : "text-[19px]"
+                  )}
+                  style={{ color: "#8B5E3C" }}
+                >
+                  {brandWord}
+                </span>
+              )}
               <Home className="size-3.5 not-italic opacity-0 group-hover:opacity-50 transition-opacity shrink-0" />
             </button>
+            <NavArrows />
           </div>
           <div className="flex items-center gap-0.5">
             <Button

@@ -1252,6 +1252,7 @@
     "drawerAgents": "Team",
     "drawerTasks": "Tasks",
     "goHome": "Go to home",
+    "brandWord": "",
     "refresh": "Refresh sidebar",
     "refreshDescription": "Refresh sidebar (re-read data folder)",
     "collapseSidebar": "Collapse sidebar",

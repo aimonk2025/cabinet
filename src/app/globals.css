@@ -290,6 +290,16 @@ html[dir="rtl"] .font-logo {
   font-family: var(--font-logo-rtl), Cardo, Georgia, serif !important;
 }
 
+/* The `cabinet` wordmark opts out of the RTL Cardo swap above: it stays
+   in the English Instrument Serif logo face in every locale (including
+   Hebrew) so the brand reads identically everywhere. Higher specificity
+   than the `html[dir="rtl"] span.font-logo` rule, so it wins in RTL. */
+.brand-en,
+html[dir="rtl"] span.brand-en,
+html[dir="rtl"] .brand-en {
+  font-family: var(--font-logo), Georgia, serif !important;
+}
+
 /* UI font — forces the theme's *body* font onto an element that would
    otherwise inherit the theme heading font (h1–h4). Lets chrome titles
    (Team / Tasks page headers) match the breadcrumb leaf, which is a

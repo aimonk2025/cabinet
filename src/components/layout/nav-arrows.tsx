@@ -20,7 +20,7 @@ export function NavArrows() {
         size="icon"
         aria-label={t("common:nav.goBack")}
         title={`${t("common:nav.goBack")} (⌘[)`}
-        className="h-7 w-7 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-40"
+        className="h-7 w-6 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-40"
         onClick={goBack}
         disabled={!canGoBack}
       >
@@ -31,7 +31,7 @@ export function NavArrows() {
         size="icon"
         aria-label={t("common:nav.goForward")}
         title={`${t("common:nav.goForward")} (⌘])`}
-        className="h-7 w-7 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-40"
+        className="h-7 w-6 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-40"
         onClick={goForward}
         disabled={!canGoForward}
       >
