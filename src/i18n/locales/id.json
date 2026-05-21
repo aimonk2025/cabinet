@@ -1022,6 +1022,18 @@
       "tagline2": "Tim AI Anda.",
       "getStarted": "Mulai"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Kantor",
+        "study": "Studi",
+        "lab": "Lab",
+        "library": "Perpustakaan",
+        "kitchen": "Dapur",
+        "family": "Keluarga",
+        "dining": "Makan",
+        "studio": "Studio"
+      }
+    },
     "welcome": {
       "paragraph": "Rumah Anda adalah milik Anda. Di dalamnya, Anda akan menyiapkan ruangan untuk berbagai bagian hidup Anda: pekerjaan, otak kedua, riset, keluarga. Dan setiap ruangan memiliki kabinet: catatan Anda, berkas Anda, dan tim AI yang diam-diam menyelesaikan pekerjaan di latar belakang.",
       "namePrompt": "Siapa nama Anda?",
@@ -1320,7 +1332,7 @@
       "agentCount_other": "{{count}} agen",
       "jobCount_one": "{{count}} tugas",
       "jobCount_other": "{{count}} tugas",
-      "subCabinetCount_one": "{{count}} sub-cabinet",
+      "subCabinetCount_one": "{{count}} sub-kabinet",
       "subCabinetCount_other": "{{count}} sub-cabinet",
       "cabinetsImported_one": "{{count}} cabinet diimpor",
       "cabinetsImported_other": "{{count}} cabinet diimpor",

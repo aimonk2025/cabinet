@@ -1022,6 +1022,18 @@
       "tagline2": "Jouw AI-team.",
       "getStarted": "Aan de slag"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Kantoor",
+        "study": "Werkkamer",
+        "lab": "Lab",
+        "library": "Bibliotheek",
+        "kitchen": "Keuken",
+        "family": "Familie",
+        "dining": "Eetkamer",
+        "studio": "Studio"
+      }
+    },
     "welcome": {
       "paragraph": "Jouw Home is van jou. Hierin richt je kamers in voor verschillende onderdelen van je leven: werk, second brain, onderzoek, familie. En elke kamer heeft cabinets: jouw notities, jouw bestanden en een AI-team dat op de achtergrond stil dingen voor je regelt.",
       "namePrompt": "Wat is je naam?",

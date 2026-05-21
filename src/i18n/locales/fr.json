@@ -1022,6 +1022,18 @@
       "tagline2": "Votre équipe IA.",
       "getStarted": "Démarrer"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Bureau",
+        "study": "Étude",
+        "lab": "Labo",
+        "library": "Bibliothèque",
+        "kitchen": "Cuisine",
+        "family": "Famille",
+        "dining": "Salle à manger",
+        "studio": "Studio"
+      }
+    },
     "welcome": {
       "paragraph": "Votre Espace est le vôtre. À l'intérieur, vous organiserez des pièces pour les différentes facettes de votre vie : travail, second cerveau, recherche, famille. Et chaque pièce contient des cabinets : vos notes, vos fichiers et une équipe d'IA qui s'occupe discrètement des tâches en arrière-plan.",
       "namePrompt": "Quel est votre nom ?",
@@ -1441,7 +1453,7 @@
       "alertRules": "Règles d'alerte",
       "alwaysOn": "Toujours activé",
       "comingSoon": "Bientôt disponible",
-      "emailPlaceholder": "you@company.com",
+      "emailPlaceholder": "vous@entreprise.com",
       "channelsHint": "Configurez la façon dont vous recevez les alertes lorsque les agents requièrent votre attention.",
       "rulesHint": "Les notifications sont déclenchées automatiquement pour ces événements :",
       "previewHint": "Notifications push du navigateur, Telegram, Slack et e-mail.",

@@ -564,7 +564,7 @@ function IntroStep({ onNext }: { onNext: () => void }) {
   // 3: def 1  4: def 2  5: def 3  6: tagline line 1  7: tagline line 2  8: button
 
   useEffect(() => {
-    const delays = [300, 600, 1100, 1700, 2300, 3100, 3700, 4200];
+    const delays = [80, 160, 320, 480, 640, 880, 1040, 1200];
     const timers = delays.map((ms, i) =>
       setTimeout(() => setPhase(i + 1), ms)
     );
@@ -574,7 +574,7 @@ function IntroStep({ onNext }: { onNext: () => void }) {
   const fade = (p: number): CSSProperties => ({
     opacity: phase >= p ? 1 : 0,
     transform: phase >= p ? "translateY(0)" : "translateY(14px)",
-    transition: "opacity 0.6s ease, transform 0.6s ease",
+    transition: "opacity 0.4s ease, transform 0.4s ease",
   });
 
   return (
@@ -613,14 +613,14 @@ function IntroStep({ onNext }: { onNext: () => void }) {
             noun
           </p>
 
-          <ol className="space-y-5 text-[15px] leading-relaxed">
+          <ol className="space-y-5 text-[15px] leading-relaxed font-serif">
             <li className="flex gap-3" style={fade(3)}>
               <span className="font-logo italic text-lg mt-[-2px] shrink-0" style={{ color: WEB.accent }}>1.</span>
               <div>
                 <p style={{ color: WEB.textSecondary }}>
-                  A cupboard with shelves or drawers for storing or displaying items.
+                  A cupboard with shelves for storing things.
                 </p>
-                <p className="font-mono text-xs italic mt-1.5" style={{ color: WEB.textTertiary }}>
+                <p className="text-[13px] italic mt-1.5" style={{ color: WEB.textTertiary }}>
                   &ldquo;a filing cabinet&rdquo;
                 </p>
               </div>
@@ -635,9 +635,9 @@ function IntroStep({ onNext }: { onNext: () => void }) {
                   >
                     politics
                   </span>
-                  The committee of senior ministers responsible for controlling government policy.
+                  Senior advisors consulting on government policy.
                 </p>
-                <p className="font-mono text-xs italic mt-1.5" style={{ color: WEB.textTertiary }}>
+                <p className="text-[13px] italic mt-1.5" style={{ color: WEB.textTertiary }}>
                   &ldquo;a cabinet meeting&rdquo;
                 </p>
               </div>
@@ -652,9 +652,9 @@ function IntroStep({ onNext }: { onNext: () => void }) {
                   >
                     software
                   </span>
-                  An AI-first knowledge base where a team of AI agents work for you 24/7 (no salary needed).
+                  A knowledge base where AI agents work for you 24/7. No salary needed.
                 </p>
-                <p className="font-mono text-xs italic mt-1.5" style={{ color: WEB.textTertiary }}>
+                <p className="text-[13px] italic mt-1.5" style={{ color: WEB.textTertiary }}>
                   &ldquo;I asked my cabinet to research the market and draft the blog post&rdquo;
                 </p>
               </div>

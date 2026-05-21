@@ -1022,6 +1022,18 @@
       "tagline2": "Sua equipe de IA.",
       "getStarted": "Começar"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Escritório",
+        "study": "Estudo",
+        "lab": "Laboratório",
+        "library": "Biblioteca",
+        "kitchen": "Cozinha",
+        "family": "Família",
+        "dining": "Jantar",
+        "studio": "Estúdio"
+      }
+    },
     "welcome": {
       "paragraph": "Sua Home é sua. Nela, você configurará salas para diferentes partes da sua vida: trabalho, segundo cérebro, pesquisa, família. E cada sala tem cabinets: suas notas, seus arquivos e uma equipe de IA trabalhando discretamente em segundo plano.",
       "namePrompt": "Qual é o seu nome?",

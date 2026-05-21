@@ -1022,6 +1022,18 @@
       "tagline2": "Ihr KI-Team.",
       "getStarted": "Los geht's"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Büro",
+        "study": "Arbeitszimmer",
+        "lab": "Labor",
+        "library": "Bibliothek",
+        "kitchen": "Küche",
+        "family": "Familie",
+        "dining": "Esszimmer",
+        "studio": "Studio"
+      }
+    },
     "welcome": {
       "paragraph": "Ihr Home gehört Ihnen. Darin richten Sie Räume für verschiedene Lebensbereiche ein: Arbeit, zweites Gehirn, Forschung, Familie. Und jeder Raum hat Cabinets: Ihre Notizen, Ihre Dateien und ein KI-Team, das im Hintergrund leise Dinge erledigt.",
       "namePrompt": "Wie ist Ihr Name?",

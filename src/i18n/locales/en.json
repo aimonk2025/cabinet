@@ -1022,6 +1022,18 @@
       "tagline2": "Your AI team.",
       "getStarted": "Get started"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Office",
+        "study": "Study",
+        "lab": "Lab",
+        "library": "Library",
+        "kitchen": "Kitchen",
+        "family": "Family",
+        "dining": "Dining",
+        "studio": "Studio"
+      }
+    },
     "welcome": {
       "paragraph": "Your Home is yours. Inside it, you'll set up rooms for different parts of your life: work, second brain, research, family. And every room has cabinets: your notes, your files, and an AI team quietly getting things done in the background.",
       "namePrompt": "What's your name?",

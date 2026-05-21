@@ -1022,6 +1022,18 @@
       "tagline2": "Đội ngũ AI của bạn.",
       "getStarted": "Bắt đầu"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Văn phòng",
+        "study": "Phòng làm việc",
+        "lab": "Phòng thí nghiệm",
+        "library": "Thư viện",
+        "kitchen": "Nhà bếp",
+        "family": "Gia đình",
+        "dining": "Phòng ăn",
+        "studio": "Studio"
+      }
+    },
     "welcome": {
       "paragraph": "Trang chủ là của bạn. Tại đây, bạn sẽ thiết lập các phòng cho từng khía cạnh trong cuộc sống: công việc, bộ não thứ hai, nghiên cứu, gia đình. Và mỗi phòng đều có các tủ (cabinets): ghi chú, tệp của bạn và một đội ngũ AI âm thầm hoàn thành công việc ở chế độ nền.",
       "namePrompt": "Tên của bạn là gì?",

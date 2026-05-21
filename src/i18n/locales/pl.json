@@ -1022,6 +1022,18 @@
       "tagline2": "Twój zespół AI.",
       "getStarted": "Rozpocznij"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Biuro",
+        "study": "Gabinet",
+        "lab": "Laboratorium",
+        "library": "Biblioteka",
+        "kitchen": "Kuchnia",
+        "family": "Rodzina",
+        "dining": "Jadalnia",
+        "studio": "Studio"
+      }
+    },
     "welcome": {
       "paragraph": "Twój Dom jest Twój. W nim urządzisz pokoje dla różnych obszarów życia: pracy, drugiego mózgu, badań, rodziny. A każdy pokój ma szafki: Twoje notatki, pliki i zespół AI, który po cichu wykonuje zadania w tle.",
       "namePrompt": "Jak masz na imię?",

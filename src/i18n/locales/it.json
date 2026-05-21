@@ -1022,6 +1022,18 @@
       "tagline2": "Il tuo team AI.",
       "getStarted": "Inizia"
     },
+    "blueprint": {
+      "rooms": {
+        "office": "Ufficio",
+        "study": "Studio",
+        "lab": "Laboratorio",
+        "library": "Libreria",
+        "kitchen": "Cucina",
+        "family": "Famiglia",
+        "dining": "Sala da pranzo",
+        "studio": "Studio"
+      }
+    },
     "welcome": {
       "paragraph": "La tua Home è tua. Al suo interno, creerai stanze per le diverse aree della tua vita: lavoro, secondo cervello, ricerca, famiglia. E ogni stanza ha dei cabinet: le tue note, i tuoi file e un team AI che lavora silenziosamente in background.",
       "namePrompt": "Come ti chiami?",
@@ -1063,7 +1075,7 @@
       "agentsReady_other": "{{count}} agenti pronti a lavorare",
       "scheduledJobs_one": "{{count}} attività pianificata",
       "scheduledJobs_other": "{{count}} attività pianificate",
-      "subCabinets_one": "{{count}} sub-cabinet",
+      "subCabinets_one": "{{count}} sottocabinet",
       "subCabinets_other": "{{count}} sub-cabinet",
       "agentsReady": "{{count}} agenti pronti a lavorare",
       "scheduledJobs": "{{count}} attività pianificate",
