@@ -700,10 +700,10 @@ export async function waitForConversationCompletion(
   const deadline = Date.now() + 15 * 60 * 1000;
   const startedAt = Date.now();
   // Tight-poll the first 5 s after startConversationRun hands off — that's
-  // the cold-start window where the UI is showing the "Working on it…"
-  // placeholder and the user is most sensitive to latency between their
-  // prompt and the first streamed bytes. Back off to the steady-state 700 ms
-  // interval after the adapter is clearly producing.
+  // the cold-start window where the UI is showing the pending typing indicator
+  // and the user is most sensitive to latency between their prompt and the
+  // first streamed bytes. Back off to the steady-state 700 ms interval after
+  // the adapter is clearly producing.
   const FAST_POLL_WINDOW_MS = 5000;
   const FAST_POLL_INTERVAL_MS = 250;
   const STEADY_POLL_INTERVAL_MS = 700;
@@ -1658,10 +1658,11 @@ export async function continueConversationRun(
       })
     : replayPrompt;
 
-  // 6. Create the pending agent turn
+  // 6. Create the pending agent turn. Empty content so the UI shows only the
+  // typing indicator (no placeholder text) until bytes stream in.
   const pending = await appendAgentTurn(
     conversationId,
-    { content: "Working on it…", pending: true },
+    { content: "", pending: true },
     cp
   );
   if (!pending) return meta;
