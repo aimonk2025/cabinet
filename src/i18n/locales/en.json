@@ -1245,7 +1245,7 @@
       "disclaimerBackup": "<strong>Back up your data regularly.</strong> Agents can read, write, and delete files across your KB and linked repos. Cabinet is not responsible for data loss. You are responsible for the AI providers you choose and their terms of service.",
       "disclaimerBeta": "<strong>Beta software. Things may break.</strong> We ship fast. Breaking changes can land without notice.",
       "legalNotice": "By continuing you agree to our <terms>Terms</terms> and <privacy>Privacy</privacy>. Cabinet is an <oss>open-source project</oss>.",
-      "keepInTouch": "Keep me in touch. Cabinet is open source and built in the open, and we'd love to learn what to build next. Use my email for occasional product updates. No spam, and you can opt out anytime."
+      "keepInTouch": "Keep me in touch. Cabinet is open source and built in the open, and we'd love to learn what to build next. No spam, we promise."
     },
     "provider": {
       "agentType": "{{type}} agent",

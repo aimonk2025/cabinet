@@ -1815,8 +1815,9 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   const [launching, setLaunching] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   // Optional consent (not required to launch): if checked, we register the
-  // welcome-step email with our backend on launch. Opt-in, unchecked by default.
-  const [keepInTouch, setKeepInTouch] = useState(false);
+  // welcome-step email with our backend on launch. Checked by default; the
+  // user can opt out before launching.
+  const [keepInTouch, setKeepInTouch] = useState(true);
   const [githubStars, setGithubStars] = useState(GITHUB_STARS_FALLBACK);
   const [providersLoading, setProvidersLoading] = useState(true);
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
@@ -3443,21 +3444,6 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                 >
                   <input
                     type="checkbox"
-                    name="disclaimer-accept"
-                    aria-label={t("breakingChanges:iAccept")}
-                    checked={disclaimerAccepted}
-                    onChange={(e) => setDisclaimerAccepted(e.target.checked)}
-                    className="mt-0.5 size-4 shrink-0 rounded"
-                    style={{ borderColor: WEB.border, accentColor: WEB.accent }}
-                  />
-                  <span>{t("breakingChangesPlus:iUnderstand")}</span>
-                </label>
-                <label
-                  className="flex cursor-pointer items-start gap-2"
-                  style={{ color: WEB.text }}
-                >
-                  <input
-                    type="checkbox"
                     name="keep-in-touch"
                     checked={keepInTouch}
                     onChange={(e) => setKeepInTouch(e.target.checked)}
@@ -3467,6 +3453,21 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   <span style={{ color: WEB.textSecondary }}>
                     {t("onboarding:launch.keepInTouch")}
                   </span>
+                </label>
+                <label
+                  className="flex cursor-pointer items-start gap-2"
+                  style={{ color: WEB.text }}
+                >
+                  <input
+                    type="checkbox"
+                    name="disclaimer-accept"
+                    aria-label={t("breakingChanges:iAccept")}
+                    checked={disclaimerAccepted}
+                    onChange={(e) => setDisclaimerAccepted(e.target.checked)}
+                    className="mt-0.5 size-4 shrink-0 rounded"
+                    style={{ borderColor: WEB.border, accentColor: WEB.accent }}
+                  />
+                  <span>{t("breakingChangesPlus:iUnderstand")}</span>
                 </label>
                 <p
                   className="text-[11px]"
