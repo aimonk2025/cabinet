@@ -16,6 +16,8 @@ import { normalizeRuntimeOverride } from "@/lib/agents/runtime-overrides";
 import { publishConversationEvent } from "@/lib/agents/conversation-events";
 import type { ConversationMeta } from "@/types/conversations";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
