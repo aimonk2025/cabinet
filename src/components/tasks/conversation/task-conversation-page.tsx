@@ -837,7 +837,7 @@ export function TaskConversationPage({
           const [fresh, daemonRes] = await Promise.all([
             fetchTask(taskId, cabinetPath || undefined),
             fetch(`/api/daemon/session/${encodeURIComponent(taskId)}/output`).then(
-              (r) => (r.ok ? r.json() : null)
+              (r) => r.ok ? r.json() : null
             ) as Promise<{
               status?: string;
               adapterErrorHint?: string | null;

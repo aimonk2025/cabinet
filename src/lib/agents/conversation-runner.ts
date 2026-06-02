@@ -826,8 +826,20 @@ export async function waitForConversationCompletion(
       // agent still has full context of the work it just did, so the retry is
       // scoped to this conversation — no cross-agent bleed like a git-diff
       // fallback would have. One retry only; a second miss is recorded as-is.
+      //
+      // Only applies to Claude adapters: the cabinet block is a Claude Code
+      // convention injected via the system prompt epilogue. Non-Claude providers
+      // (opencode/pi/codex/gemini/etc.) don't produce this block and never will,
+      // so triggering the retry for them desynchronises the daemon session status
+      // from meta.status ("running" during retry vs "completed" original session),
+      // which causes the safety poll to prematurely mark the task idle and
+      // prevents live updates in the task detail view.
+      const adapterSupportsCabinetBlock =
+        finalMeta.adapterType === "claude_local" ||
+        finalMeta.adapterType === "claude_code_legacy";
       if (
         normalizedStatus === "completed" &&
+        adapterSupportsCabinetBlock &&
         isCabinetBlockMissing(data.output || "")
       ) {
         try {
