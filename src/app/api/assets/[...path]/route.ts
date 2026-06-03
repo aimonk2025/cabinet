@@ -57,20 +57,37 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       if (normalized.includes("..")) {
         return NextResponse.json({ error: "Invalid path" }, { status: 400 });
       }
+
+      // Resolve symlinks before the mount check so a symlink inside a mount
+      // cannot point outside it (e.g. /mount/link -> /etc/passwd).
+      let realNormalized: string;
+      try {
+        realNormalized = await fs.realpath(normalized);
+      } catch {
+        return NextResponse.json({ error: "File not found" }, { status: 404 });
+      }
+
       const db = getDb();
       const mounts = db.prepare("SELECT abs_path FROM google_drive_mounts WHERE enabled = 1").all() as { abs_path: string }[];
-      const inMount = mounts.some((m) => {
-        const mp = path.normalize(m.abs_path);
-        return normalized.startsWith(mp + path.sep) || normalized === mp;
-      });
+
+      // Resolve each mount's real path for an apples-to-apples comparison.
+      const mountRealpaths = await Promise.all(
+        mounts.map(async (m) => {
+          try { return await fs.realpath(m.abs_path); } catch { return m.abs_path; }
+        })
+      );
+      const inMount = mountRealpaths.some(
+        (mp) => realNormalized.startsWith(mp + path.sep) || realNormalized === mp
+      );
       if (!inMount) {
         return NextResponse.json({ error: "Path is not within a mounted folder" }, { status: 403 });
       }
+
       try {
-        const stat = await fs.stat(normalized);
-        const ext = path.extname(normalized).toLowerCase();
+        const stat = await fs.stat(realNormalized);
+        const ext = path.extname(realNormalized).toLowerCase();
         const contentType = MIME_TYPES[ext] || "application/octet-stream";
-        const buffer = await fs.readFile(normalized);
+        const buffer = await fs.readFile(realNormalized);
         return new NextResponse(buffer, {
           headers: {
             "Content-Type": contentType,

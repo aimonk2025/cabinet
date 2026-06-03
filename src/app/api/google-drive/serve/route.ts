@@ -27,14 +27,6 @@ function getMimeType(filePath: string): string {
   return MIME_TYPES[ext] || "application/octet-stream";
 }
 
-// Validate that the requested abs path is within a known mount.
-function isWithinMount(absPath: string, mounts: { abs_path: string }[]): boolean {
-  const normalized = path.normalize(absPath);
-  return mounts.some((m) => {
-    const mountNorm = path.normalize(m.abs_path);
-    return normalized.startsWith(mountNorm + path.sep) || normalized === mountNorm;
-  });
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,26 +45,43 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid path" }, { status: 400 });
     }
 
-    // Validate against known mounts
+    // Resolve symlinks before the mount check so a symlink inside a mount
+    // cannot point outside it.
+    let realNormalized: string;
+    try {
+      realNormalized = await fs.realpath(normalized);
+    } catch {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    // Validate against known mounts using real paths.
     const db = getDb();
     const mounts = db
       .prepare("SELECT abs_path FROM google_drive_mounts WHERE enabled = 1")
       .all() as { abs_path: string }[];
 
-    if (!isWithinMount(normalized, mounts)) {
+    const mountRealpaths = await Promise.all(
+      mounts.map(async (m) => {
+        try { return await fs.realpath(m.abs_path); } catch { return m.abs_path; }
+      })
+    );
+    const inMount = mountRealpaths.some(
+      (mp) => realNormalized.startsWith(mp + path.sep) || realNormalized === mp
+    );
+    if (!inMount) {
       return NextResponse.json({ error: "Path is not within a mounted folder" }, { status: 403 });
     }
 
     // Read file
     let data: Uint8Array;
     try {
-      data = new Uint8Array(await fs.readFile(normalized));
+      data = new Uint8Array(await fs.readFile(realNormalized));
     } catch {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
-    const mimeType = getMimeType(normalized);
-    const filename = path.basename(normalized);
+    const mimeType = getMimeType(realNormalized);
+    const filename = path.basename(realNormalized);
 
     return new NextResponse(data as unknown as BodyInit, {
       headers: {
