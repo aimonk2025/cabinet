@@ -85,13 +85,57 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
       try {
         const stat = await fs.stat(realNormalized);
+        const totalSize = stat.size;
         const ext = path.extname(realNormalized).toLowerCase();
         const contentType = MIME_TYPES[ext] || "application/octet-stream";
+
+        const rangeHeader = req.headers.get("range");
+        if (rangeHeader) {
+          const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim());
+          if (match) {
+            const startRaw = match[1];
+            const endRaw = match[2];
+            const start = startRaw === "" ? Math.max(0, totalSize - Number(endRaw || 0)) : Number(startRaw);
+            const end = startRaw === "" ? totalSize - 1 : endRaw === "" ? totalSize - 1 : Number(endRaw);
+            if (
+              Number.isFinite(start) &&
+              Number.isFinite(end) &&
+              start >= 0 &&
+              end < totalSize &&
+              start <= end
+            ) {
+              const fh = await fs.open(realNormalized, "r");
+              try {
+                const size = end - start + 1;
+                const buf = Buffer.alloc(size);
+                await fh.read(buf, 0, size, start);
+                return new NextResponse(buf, {
+                  status: 206,
+                  headers: {
+                    "Content-Type": contentType,
+                    "Content-Length": String(size),
+                    "Content-Range": `bytes ${start}-${end}/${totalSize}`,
+                    "Accept-Ranges": "bytes",
+                    "Cache-Control": "private, max-age=60",
+                  },
+                });
+              } finally {
+                await fh.close();
+              }
+            }
+            return new NextResponse(null, {
+              status: 416,
+              headers: { "Content-Range": `bytes */${totalSize}` },
+            });
+          }
+        }
+
         const buffer = await fs.readFile(realNormalized);
         return new NextResponse(buffer, {
           headers: {
             "Content-Type": contentType,
-            "Content-Length": String(stat.size),
+            "Content-Length": String(totalSize),
+            "Accept-Ranges": "bytes",
             "Cache-Control": "private, max-age=60",
           },
         });

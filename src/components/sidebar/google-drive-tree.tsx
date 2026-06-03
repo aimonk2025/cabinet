@@ -61,12 +61,16 @@ function DriveNode({ node, depth, padFn, expandedPaths, onToggle }: DriveNodePro
     setSection({ type: "page" });
   };
 
+  const childrenId = isDir ? `gdrive-children-${node.path.replace(/[^a-z0-9]/gi, "-")}` : undefined;
+
   return (
     <div>
       <button
         type="button"
         onClick={handleClick}
         style={padFn(depth)}
+        aria-expanded={isDir ? expanded : undefined}
+        aria-controls={isDir ? childrenId : undefined}
         className={cn(
           "flex w-full items-center gap-1.5 py-1 px-2 text-[12px] text-foreground/75 rounded-md transition-colors cursor-pointer text-left",
           "hover:bg-foreground/[0.03] hover:text-foreground",
@@ -110,7 +114,7 @@ function DriveNode({ node, depth, padFn, expandedPaths, onToggle }: DriveNodePro
       </button>
 
       {isDir && expanded && node.children && node.children.length > 0 && (
-        <div>
+        <div id={childrenId}>
           {node.children.map((child) => (
             <DriveNode
               key={child.path}
@@ -232,11 +236,14 @@ export function GoogleDriveTreeSection({ depth, padFn }: GoogleDriveTreeSectionP
       {/* One block per mount */}
       {sections.map((section) => {
         const expanded = sectionExpanded[section.mountId] ?? true;
+        const mountChildrenId = `gdrive-mount-${section.mountId.replace(/[^a-z0-9]/gi, "-")}`;
         return (
           <div key={section.mountId}>
             <button
               type="button"
               style={padFn(depth)}
+              aria-expanded={expanded}
+              aria-controls={mountChildrenId}
               onClick={() =>
                 setSectionExpanded((prev) => ({
                   ...prev,
@@ -254,16 +261,20 @@ export function GoogleDriveTreeSection({ depth, padFn }: GoogleDriveTreeSectionP
               <span className="min-w-0 flex-1 truncate font-medium">{section.folderName}</span>
             </button>
 
-            {expanded && section.children.map((node) => (
-              <DriveNode
-                key={node.path}
-                node={node}
-                depth={depth + 1}
-                padFn={padFn}
-                expandedPaths={expandedPaths}
-                onToggle={togglePath}
-              />
-            ))}
+            {expanded && (
+              <div id={mountChildrenId}>
+                {section.children.map((node) => (
+                  <DriveNode
+                    key={node.path}
+                    node={node}
+                    depth={depth + 1}
+                    padFn={padFn}
+                    expandedPaths={expandedPaths}
+                    onToggle={togglePath}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
