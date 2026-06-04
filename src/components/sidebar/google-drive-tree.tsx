@@ -143,7 +143,7 @@ function DriveNode({ node, depth, padFn, expandedPaths, onToggle }: DriveNodePro
         </ContextMenuItem>
         <ContextMenuItem onClick={doReveal}>
           <FolderOpen className="h-4 w-4 me-2" />
-          {process.platform === "win32" ? "Show in Explorer" : process.platform === "linux" ? "Open Containing Folder" : "Open in Finder"}
+          Reveal in File Manager
         </ContextMenuItem>
       </ContextMenuContent>
       </ContextMenu>
