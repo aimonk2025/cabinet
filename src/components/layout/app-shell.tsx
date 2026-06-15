@@ -335,8 +335,12 @@ export function AppShell() {
     // home container: the bare home screen, or any content view scoped to the
     // data-dir root ("."). You're always inside a room, never the dir above
     // it. (settings/help/registry carry no cabinetPath, so are untouched.)
+    // A "page" scoped to the data-dir root is a file the user explicitly opened
+    // (e.g. `#/p/foo`), not the neutral home container — don't yank it into a room.
+    // (On Windows a leading-`\` path normalized to "." made this hijack visible: #103.)
     const onHomeContainer =
-      (section.type === "home" && !cp) || cp === ROOT_CABINET_PATH;
+      (section.type === "home" && !cp) ||
+      (cp === ROOT_CABINET_PATH && section.type !== "page");
     if (onHomeContainer) {
       setSection({ type: "cabinet", cabinetPath: landingRoom });
     }
