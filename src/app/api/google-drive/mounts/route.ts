@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
+import { detectDriveDesktop } from "@/lib/google-drive/detect-desktop";
 import { randomUUID } from "crypto";
 import fs from "fs/promises";
+import path from "path";
 
 export async function GET() {
   try {
@@ -32,6 +34,28 @@ export async function POST(request: NextRequest) {
       }
     } catch {
       return NextResponse.json({ error: "Path does not exist" }, { status: 400 });
+    }
+
+    // Constrain mounts to within the detected Drive root, so arbitrary host
+    // directories can't be mounted and exposed through the Drive APIs. Compare
+    // realpaths to defeat symlinks pointing outside the mount.
+    const detection = await detectDriveDesktop();
+    if (!detection.mountPath) {
+      return NextResponse.json({ error: "Google Drive for Desktop not detected" }, { status: 400 });
+    }
+    let realMountPath: string;
+    let realAbsPath: string;
+    try {
+      realMountPath = await fs.realpath(detection.mountPath);
+      realAbsPath = await fs.realpath(absPath);
+    } catch {
+      return NextResponse.json({ error: "Path does not exist" }, { status: 400 });
+    }
+    const within =
+      realAbsPath === realMountPath ||
+      realAbsPath.startsWith(realMountPath + path.sep);
+    if (!within) {
+      return NextResponse.json({ error: "Path is outside the Google Drive mount" }, { status: 400 });
     }
 
     const db = getDb();

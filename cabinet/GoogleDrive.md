@@ -67,36 +67,41 @@ A filesystem folder browser modal scoped to the detected Drive root. Selected fo
 
 ```sql
 CREATE TABLE IF NOT EXISTS google_drive_mounts (
-  id           TEXT PRIMARY KEY,  -- uuid
-  abs_path     TEXT NOT NULL,     -- absolute local path (Phase 1)
+  id           TEXT PRIMARY KEY,             -- uuid
+  abs_path     TEXT NOT NULL UNIQUE,         -- absolute local path (Phase 1)
   folder_name  TEXT NOT NULL,
-  enabled      INTEGER DEFAULT 1,
-  added_at     TEXT NOT NULL
+  enabled      INTEGER NOT NULL DEFAULT 1,
+  added_at     TEXT NOT NULL DEFAULT (datetime('now'))
 );
 ```
 
 ### Tree integration
 
-Mounts appear as a separate root section below local documents:
+Mounts appear inline in the main file tree, directly after the local cabinet
+documents — there is no separate "Google Drive" root section or section header:
 
 ```
-▾ 📁 Local
-   ▾ My Cabinet
-     ...
-
-▾ ☁ Google Drive
-   ▾ My KB Folder
-     📄 Design Doc
-     📝 Meeting Notes.md
-   ▾ Team Docs
-     ...
+▾ 📁 Getting Started
+   📄 Design
+   📄 Development
+   ...
+▾ ☁ My KB Folder        ← mounted Drive folder, inline with local docs
+   📄 Design Doc
+   📝 Meeting Notes.md
+▾ ☁ Team Docs
+   ...
 ```
 
 - The existing `buildTreeRecursive` is called with each mount's absolute path.
-- Nodes get a `source: "google-drive"` annotation so the sidebar renders the section header and ☁ icon.
-- Drive section is collapsible; state persisted in localStorage.
-- 60-second tree cache for Drive (vs. 5-second for local); manual refresh button on the section header.
-- Native Google format nodes (`.gdoc` etc.) show a lock icon indicating read-only.
+- Nodes get a `source: "google-drive"` annotation; it's used for styling — each
+  mount's root row renders with a ☁ cloud glyph (the only marker distinguishing
+  it from a local folder) and native Google-format nodes are flagged read-only.
+- Each mount is an independent collapsible folder; expansion state persisted in localStorage.
+- 60-second tree cache for Drive (vs. 5-second for local). No manual refresh
+  button — the sidebar force-refetches when a folder is mounted/unmounted, via
+  the `cabinet:gdrive-mounts-changed` event.
+- Clicking a Drive file opens it in the right-hand viewer.
+- Native Google format nodes (`.gdoc` etc.) show a read-only indicator.
 
 ### New files (Phase 1)
 
@@ -105,12 +110,13 @@ src/
   lib/
     google-drive/
       detect-desktop.ts          ← probe known mount paths, return { path } | null
+      tree-builder.ts            ← build tree nodes from a mount path (source: "google-drive")
+      paths.ts                   ← gdrive: path encode/decode helpers
   components/
     settings/
-      google-drive-section.tsx   ← detection UI + folder mount manager
-      google-drive-folder-picker.tsx  ← filesystem folder browser modal
+      google-drive-section.tsx   ← detection UI, folder mount manager, folder-picker dialog
     sidebar/
-      google-drive-section-header.tsx ← ☁ label + refresh + manage link
+      google-drive-tree.tsx      ← renders mounts inline in the file tree
 ```
 
 ---
