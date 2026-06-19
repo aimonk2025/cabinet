@@ -42,7 +42,12 @@ export function providerLogo(id: KnowledgeProviderId): string | undefined {
 export interface ConnectKnowledgeTile {
   key: string;
   label: string;
-  kind: "local" | "google-drive" | "soon";
+  /**
+   * "local" → folder-symlink flow; "google-drive"/"icloud"/… → desktop-sync
+   * folder picker; "hub" → open the Integrations Hub at this connector (the
+   * key doubles as the catalog slug); "soon" → disabled placeholder.
+   */
+  kind: "local" | "google-drive" | "icloud" | "onedrive" | "hub" | "soon";
   /** Brand logo under /public; undefined → caller renders a Lucide glyph. */
   logo?: string;
 }
@@ -55,6 +60,6 @@ export const CONNECT_KNOWLEDGE_TILES: ConnectKnowledgeTile[] = [
   { key: "sharepoint", label: "SharePoint", kind: "soon", logo: "/logos/sharepoint.svg" },
   { key: "dropbox", label: "Dropbox", kind: "soon", logo: "/logos/dropbox.webp" },
   { key: "box", label: "Box", kind: "soon", logo: "/logos/box.webp" },
-  { key: "notion", label: "Notion", kind: "soon", logo: "/logos/notion.svg" },
-  { key: "confluence", label: "Confluence", kind: "soon", logo: "/logos/confluence.svg" },
+  { key: "notion", label: "Notion", kind: "hub", logo: "/logos/notion.svg" },
+  { key: "confluence", label: "Confluence", kind: "hub", logo: "/logos/confluence.svg" },
 ];

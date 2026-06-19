@@ -2,6 +2,7 @@
 
 import { FolderSymlink, Cloud } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAppStore } from "@/stores/app-store";
 import {
   Dialog,
   DialogContent,
@@ -30,9 +31,20 @@ export function ConnectKnowledgeDialog({
   onOpenChange: (open: boolean) => void;
   onPick: (kind: "local" | "google-drive") => void;
 }) {
+  const setSection = useAppStore((s) => s.setSection);
+
   const handlePick = (tile: ConnectKnowledgeTile) => {
     if (tile.kind === "soon") return;
-    onPick(tile.kind);
+    if (tile.kind === "hub") {
+      // Notion/Confluence aren't file/folder sources — they connect as MCP in
+      // the Integrations Hub. Route there, deep-linked to the connector.
+      setSection({ type: "integrations", slug: tile.key });
+      onOpenChange(false);
+      return;
+    }
+    if (tile.kind === "local" || tile.kind === "google-drive") {
+      onPick(tile.kind);
+    }
   };
 
   return (
@@ -92,6 +104,11 @@ export function ConnectKnowledgeDialog({
                 {tile.kind === "local" && (
                   <span className="-mt-1.5 text-[10px] font-normal text-muted-foreground/70">
                     (symlink)
+                  </span>
+                )}
+                {tile.kind === "hub" && (
+                  <span className="-mt-1.5 text-[10px] font-normal text-muted-foreground/70">
+                    in Hub
                   </span>
                 )}
                 {!enabled && (
