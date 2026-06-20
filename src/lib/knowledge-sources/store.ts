@@ -46,11 +46,12 @@ interface SourcesFile {
   sources: KnowledgeSource[];
 }
 
-/** A connected Drive folder in the shape buildGoogleDriveTree() / the guards expect. */
+/** A connected cloud folder in the shape buildGoogleDriveTree() / the guards expect. */
 export interface DriveMount {
   id: string;
   abs_path: string;
   folder_name: string;
+  provider: KnowledgeProviderId;
 }
 
 /** `<room>/.agents/.config/knowledge-sources.json`, traversal-guarded. */
@@ -149,16 +150,19 @@ export async function removeKnowledgeSource(
   return true;
 }
 
-/** Enabled google-drive "browser" sources for a room, in buildGoogleDriveTree() shape. */
+/** Enabled "browser" sources (any provider) for a room, in buildGoogleDriveTree() shape. */
 export async function listDriveMounts(
   cabinetPath: string,
 ): Promise<DriveMount[]> {
   const sources = await readKnowledgeSources(cabinetPath);
   return sources
-    .filter(
-      (s) => s.provider === "google-drive" && s.enabled && s.surface === "browser",
-    )
-    .map((s) => ({ id: s.id, abs_path: s.absPath, folder_name: s.name }));
+    .filter((s) => s.enabled && s.surface === "browser")
+    .map((s) => ({
+      id: s.id,
+      abs_path: s.absPath,
+      folder_name: s.name,
+      provider: s.provider,
+    }));
 }
 
 /**

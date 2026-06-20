@@ -974,9 +974,8 @@ export function TreeView() {
       onOpenChange={setConnectDriveOpen}
       cabinetPath={dataRootPath}
       provider={driveProvider}
-      // Google Drive uses the dedicated per-room browser; the others mount
-      // inline at the room root (no browser surface for them yet).
-      mountAt={driveProvider === "google-drive" ? undefined : dataRootPath}
+      // From the room root, every provider connects into the per-room cloud
+      // browser (the dedicated section); per-node connects mount inline.
     />
 
     <NewFileDialog

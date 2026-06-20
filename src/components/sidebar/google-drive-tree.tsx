@@ -198,10 +198,6 @@ export function GoogleDriveTreeSection({ depth, padFn, cabinetPath }: GoogleDriv
   const [sectionExpanded, setSectionExpanded] = useState<Record<string, boolean>>({});
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(loadExpandedPaths);
   const lastFetchRef = useRef<number>(0);
-  // The per-room browser only lists google-drive sources today, so the mount
-  // glyph is the Google Drive mark. When other providers gain a browser
-  // surface, thread the source's provider through and look it up per-section.
-  const driveLogo = providerLogo("google-drive");
 
   const fetchDriveTree = useCallback(async (force = false) => {
     const now = Date.now();
@@ -266,6 +262,7 @@ export function GoogleDriveTreeSection({ depth, padFn, cabinetPath }: GoogleDriv
       {sections.map((section) => {
         const expanded = sectionExpanded[section.mountId] ?? true;
         const mountChildrenId = `gdrive-mount-${section.mountId.replace(/[^a-z0-9]/gi, "-")}`;
+        const sectionLogo = providerLogo(section.provider ?? "google-drive");
         return (
           <div key={section.mountId}>
             <button
@@ -286,11 +283,11 @@ export function GoogleDriveTreeSection({ depth, padFn, cabinetPath }: GoogleDriv
               ) : (
                 <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground/60" />
               )}
-              {driveLogo ? (
+              {sectionLogo ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={driveLogo} alt="" className="h-3.5 w-3.5 shrink-0" />
+                <img src={sectionLogo} alt="" className="h-3.5 w-3.5 shrink-0" />
               ) : (
-                <Cloud className="h-3.5 w-3.5 shrink-0 text-blue-400" />
+                <Cloud className="h-3.5 w-3.5 shrink-0 text-sky-400" />
               )}
               {/* text-start: the sidebar inherits text-align:center; without
                   this a short name like "My Drive" floats to the middle. */}

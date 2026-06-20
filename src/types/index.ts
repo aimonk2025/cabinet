@@ -59,6 +59,8 @@ export interface GoogleDriveSection {
   mountId: string;
   folderName: string;
   absPath: string;
+  /** The provider this mount belongs to (drives the section's brand icon). */
+  provider?: "local" | "google-drive" | "icloud" | "onedrive" | "sharepoint" | "dropbox";
   children: TreeNode[];
 }
 
