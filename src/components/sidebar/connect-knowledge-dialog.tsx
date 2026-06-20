@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FolderSymlink, Cloud } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/stores/app-store";
@@ -12,9 +13,16 @@ import {
 } from "@/components/ui/dialog";
 import {
   CONNECT_KNOWLEDGE_TILES,
+  providerLogo,
   type ConnectKnowledgeTile,
 } from "@/lib/knowledge-sources/providers";
 import type { KnowledgeProviderId } from "@/lib/knowledge-sources/store";
+
+interface DetectedAccount {
+  provider: KnowledgeProviderId;
+  account: string;
+  root: string;
+}
 
 /**
  * Connect Knowledge picker — a tile grid of knowledge sources styled like the
@@ -37,6 +45,23 @@ export function ConnectKnowledgeDialog({
   onCloud: (provider: KnowledgeProviderId) => void;
 }) {
   const setSection = useAppStore((s) => s.setSection);
+
+  // Auto-scan: surface the desktop-sync accounts actually installed on this
+  // machine, so the user can jump straight to the one they have.
+  const [accounts, setAccounts] = useState<DetectedAccount[]>([]);
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    fetch("/api/knowledge-sources/scan", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled) setAccounts(Array.isArray(d.accounts) ? d.accounts : []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   const handlePick = (tile: ConnectKnowledgeTile) => {
     if (tile.kind === "soon") return;
@@ -63,6 +88,35 @@ export function ConnectKnowledgeDialog({
             the tree and are available to agents as context.
           </DialogDescription>
         </DialogHeader>
+
+        {accounts.length > 0 && (
+          <div>
+            <div className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/60">
+              Detected on this Mac
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {accounts.map((a) => {
+                const logo = providerLogo(a.provider);
+                return (
+                  <button
+                    key={`${a.provider}:${a.account}`}
+                    type="button"
+                    onClick={() => onCloud(a.provider)}
+                    className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-[12px] transition-colors hover:bg-foreground/[0.04]"
+                  >
+                    {logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={logo} alt="" className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <Cloud className="h-4 w-4 shrink-0 text-sky-400" />
+                    )}
+                    <span className="max-w-[180px] truncate">{a.account}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-5 gap-4 py-2">
           {CONNECT_KNOWLEDGE_TILES.map((tile) => {

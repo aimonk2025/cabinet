@@ -7,6 +7,7 @@ import { CABINET_LINK_META_CANDIDATES, CABINET_MANIFEST_FILE } from "@/lib/cabin
 import { ROOT_CABINET_PATH } from "@/lib/cabinets/paths";
 import type { TreeNode, GoogleFrontmatter } from "@/types";
 import { getInlineSourceMap, type InlineMark } from "@/lib/knowledge-sources/store";
+import { googleNativeKind, parseGoogleNative } from "@/lib/google-drive/native-docs";
 import { DATA_DIR, virtualPathFromFs, isHiddenEntry } from "./path-utils";
 import { listDirectory, readFileContent, fileExists } from "./fs-operations";
 import { ORDER_SIDECAR } from "./order-store";
@@ -265,6 +266,21 @@ async function buildTreeRecursive(
         frontmatter: {
           title: entry.name.replace(/\.csv$/i, ""),
           order: sidecarOrders[entry.name],
+        },
+      });
+    } else if (googleNativeKind(entry.name)) {
+      // Google Workspace shortcut (e.g. inside an inline-mounted Drive folder):
+      // show it with the native-doc icon + its web URL so it opens in the viewer.
+      const native = await parseGoogleNative(fullPath);
+      nodes.push({
+        name: entry.name,
+        path: vPath, // keep the extension so readPage resolves the shortcut file
+        type: "file",
+        knowledgePolicy: inheritedPolicy,
+        frontmatter: {
+          title: entry.name.replace(/\.(gdoc|gsheet|gslide|gslides|gform)$/i, ""),
+          order: sidecarOrders[entry.name],
+          google: native ? { kind: native.kind, url: native.url } : undefined,
         },
       });
     } else {
