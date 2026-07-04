@@ -7,6 +7,7 @@ import { editorExtensions } from "./extensions";
 import { EditorToolbar } from "./editor-toolbar";
 import { SlashCommands } from "./slash-commands";
 import { EditorMentionPicker } from "./mention-picker";
+import { PasteLinkMenu } from "./paste-link-menu";
 import { EditorBubbleMenu } from "./bubble-menu";
 import { TableMenu } from "./table-menu";
 import { FindBar } from "./find-bar";
@@ -169,6 +170,14 @@ export function KBEditor() {
   // calls flushSync internally; setState during the parent render explodes
   // when EditorContent renders in the same pass.
   const [folderTab, setFolderTab] = useState<"page" | "files">("page");
+  // Inline "Link vs Embed" chooser after a bare URL is pasted on its own line.
+  const [pasteMenu, setPasteMenu] = useState<{
+    url: string;
+    from: number;
+    to: number;
+    top: number;
+    left: number;
+  } | null>(null);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFolderTab("page");
@@ -364,8 +373,35 @@ export function KBEditor() {
           if (detected) {
             const isGenericFallback =
               detected.provider === "iframe" || detected.provider === "video";
-            const { $from } = editor.state.selection;
+            const { $from, from } = editor.state.selection;
             const onEmptyLine = $from.parent.textContent.length === 0;
+
+            // Generic web page on its own line: don't force an iframe (many sites
+            // refuse framing -> dead grey box). Drop a plain link and let the user
+            // pick Link vs Embed via the inline menu (Embed is frame-checked).
+            if (detected.provider === "iframe" && onEmptyLine) {
+              editor
+                .chain()
+                .focus()
+                .insertContent({
+                  type: "text",
+                  text,
+                  marks: [{ type: "link", attrs: { href: text } }],
+                })
+                .run();
+              const to = editor.state.selection.from;
+              const coords = editor.view.coordsAtPos(to);
+              setPasteMenu({
+                url: text,
+                from,
+                to,
+                top: coords.bottom + 4,
+                left: coords.left,
+              });
+              return true;
+            }
+
+            // Media providers embed anywhere; video files embed on their own line.
             if (!isGenericFallback || onEmptyLine) {
               editor.commands.setEmbed({ url: text });
               return true;
@@ -545,6 +581,26 @@ export function KBEditor() {
     });
   };
 
+  // Any further edit (typing, clicking away) means "keep the link" — close the menu.
+  useEffect(() => {
+    if (!pasteMenu || !editor) return;
+    const close = () => setPasteMenu(null);
+    editor.on("update", close);
+    return () => {
+      editor.off("update", close);
+    };
+  }, [pasteMenu, editor]);
+
+  const embedFromPasteMenu = () => {
+    if (!pasteMenu || !editor) return;
+    editor
+      .chain()
+      .focus()
+      .deleteRange({ from: pasteMenu.from, to: pasteMenu.to })
+      .setEmbed({ url: pasteMenu.url })
+      .run();
+    setPasteMenu(null);
+  };
 
   if (currentPath === null) {
     return (
@@ -718,6 +774,15 @@ export function KBEditor() {
             <TableMenu editor={editor} />
             <SlashCommands editor={editor} />
             <EditorMentionPicker editor={editor} />
+            {pasteMenu && (
+              <PasteLinkMenu
+                url={pasteMenu.url}
+                top={pasteMenu.top}
+                left={pasteMenu.left}
+                onEmbed={embedFromPasteMenu}
+                onDismiss={() => setPasteMenu(null)}
+              />
+            )}
 
             {/* AI Edit Prompt + slash hint */}
             <div className="max-w-[var(--editor-max-w,48rem)] mx-auto px-8 pb-8 flex items-center gap-4">
