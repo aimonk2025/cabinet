@@ -64,6 +64,7 @@ import {
 } from "@/components/composer/task-runtime-picker";
 import { isAgentProviderSelectable } from "@/lib/agents/provider-filters";
 import { ProviderSetupSteps } from "@/components/settings/provider-setup-steps";
+import { ProviderGlyph } from "@/components/agents/provider-glyph";
 import { cn } from "@/lib/utils";
 import { showError } from "@/lib/ui/toast";
 import { confirmDialog } from "@/lib/ui/confirm";
@@ -1433,13 +1434,14 @@ export function SettingsPage() {
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-3">
-                                    {isReady ? (
-                                      <CheckCircle className="h-4 w-4 text-green-500" />
-                                    ) : isInstalled ? (
-                                      <XCircle className="h-4 w-4 text-amber-500" />
-                                    ) : (
-                                      <XCircle className="h-4 w-4 text-muted-foreground" />
-                                    )}
+                                    {/* Provider logo + a status dot (ready/installed/none). */}
+                                    <div className="relative shrink-0 text-foreground/80">
+                                      <ProviderGlyph icon={provider.icon} asset={provider.iconAsset} className="h-7 w-7" />
+                                      <span className={cn(
+                                        "absolute -bottom-0.5 -end-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card",
+                                        isReady ? "bg-green-500" : isInstalled ? "bg-amber-500" : "bg-muted-foreground/40",
+                                      )} />
+                                    </div>
                                     <div>
                                       <p className="text-[13px] font-medium">{provider.name}</p>
                                       <p className={cn("text-[11px]", statusColor)}>

@@ -6,9 +6,9 @@ import { dedupFetch } from "@/lib/api/dedup-fetch";
 import {
   BrainCircuit,
   Check,
+  ChevronDown,
   RefreshCw,
   Search,
-  Sparkles,
   Terminal,
   X,
 } from "lucide-react";
@@ -27,12 +27,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import { getDefaultAdapterTypeForProviderInfo } from "@/lib/agents/adapter-options";
 import type {
   ConversationRuntimeMode,
@@ -313,215 +307,6 @@ function sameSelection(
     (left.model || "") === (right.model || "") &&
     (left.effort || "") === (right.effort || "") &&
     (left.runtimeMode || "native") === (right.runtimeMode || "native")
-  );
-}
-
-function SelectionRadio({
-  checked,
-  label,
-  onSelect,
-  toneId,
-}: {
-  checked: boolean;
-  label: string;
-  onSelect: () => void;
-  toneId?: string;
-}) {
-  const tone = getEffortTone(toneId);
-
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={checked}
-      aria-label={label}
-      className={cn(
-        "inline-flex size-[22px] items-center justify-center rounded-full border-[2.5px] transition-[border-color,background-color,box-shadow] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-1",
-        tone.focus,
-        checked
-          ? tone.selected
-          : cn("bg-background", tone.idle)
-      )}
-      onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        onSelect();
-      }}
-    >
-      <span
-        className={cn(
-          "size-[9px] rounded-full transition-transform",
-          checked ? cn("scale-100", tone.selectedDot) : "scale-0 bg-transparent"
-        )}
-      />
-    </button>
-  );
-}
-
-function ProviderRuntimeMatrix({
-  provider,
-  currentProviderId,
-  currentModelId,
-  selectedEffortId,
-  onSelect,
-}: {
-  provider: ProviderInfo;
-  currentProviderId?: string;
-  currentModelId?: string;
-  selectedEffortId?: string;
-  onSelect: (modelId: string, effortId?: string) => void;
-}) {
-  const { t } = useLocale();
-  const matrixEffortColumns = getProviderEffortColumns(provider);
-  const models = provider.models || [];
-
-  if (models.length === 0) {
-    return (
-      <div className="px-3 py-5 text-center text-[10px] text-muted-foreground">
-        No models are available for this provider yet.
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="overflow-x-auto">
-        <div
-          role="radiogroup"
-          aria-label={`Task runtime matrix for ${provider.name}`}
-          className="min-w-max"
-        >
-          <table className="w-full border-collapse text-[9px]">
-            <thead className="bg-muted/25">
-              <tr>
-                <th className="min-w-[9.5rem] px-2.5 py-1.5 text-left font-medium text-foreground">
-                  {t("runtime:modelCol")}
-                </th>
-                {[{ id: AUTO_EFFORT_ID, name: t("runtime:auto") }, ...matrixEffortColumns].map(
-                  (effort) => {
-                    const tone = getEffortTone(effort.id);
-                    const label =
-                      effort.id === AUTO_EFFORT_ID
-                        ? t("runtime:auto")
-                        : formatEffortName(effort.name) || effort.name;
-
-                    return (
-                      <th
-                        key={effort.id}
-                        className="min-w-[3.1rem] px-1 py-1 text-center"
-                      >
-                        <div className="flex flex-col items-center gap-0.5">
-                          <span
-                            className={cn(
-                              "text-[8.5px] font-semibold",
-                              tone.header
-                            )}
-                          >
-                            {label}
-                          </span>
-                          <span className="flex w-full items-center gap-1">
-                            <span
-                              className={cn(
-                                "h-1.5 w-1.5 shrink-0 rounded-full",
-                                tone.dot
-                              )}
-                            />
-                            <span
-                              className={cn(
-                                "h-0.5 flex-1 rounded-full",
-                                tone.line
-                              )}
-                            />
-                          </span>
-                        </div>
-                      </th>
-                    );
-                  }
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {models.map((model) => {
-                const modelEfforts = getModelEffortLevels(provider, model.id);
-                const isCurrentModel =
-                  currentProviderId === provider.id && currentModelId === model.id;
-
-                return (
-                  <tr
-                    key={model.id}
-                    className={cn(
-                      "border-t border-border/60",
-                      isCurrentModel && "bg-muted/20"
-                    )}
-                  >
-                    <td className="px-2.5 py-1.5 align-top">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="flex items-center gap-1 text-[11.5px] font-medium text-foreground">
-                          {model.name}
-                          {model.requires === "api_key" ? (
-                            <span
-                              title={t("runtime:ptyWarningTitle")}
-                              className="inline-flex items-center rounded-sm border border-amber-500/40 bg-amber-500/10 px-1 py-px text-[8.5px] font-medium uppercase tracking-wide text-amber-600 dark:text-amber-400"
-                            >
-                              API key
-                            </span>
-                          ) : null}
-                        </span>
-                        {model.description ? (
-                          <span className="max-w-[11rem] text-[9px] leading-3.5 text-muted-foreground">
-                            {model.description}
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-
-                    <td className="px-1 py-1 text-center align-middle">
-                      <SelectionRadio
-                        checked={isCurrentModel && !selectedEffortId}
-                        label={`${model.name}, default effort`}
-                        toneId={AUTO_EFFORT_ID}
-                        onSelect={() => onSelect(model.id)}
-                      />
-                    </td>
-
-                    {matrixEffortColumns.map((effort) => {
-                      const available = modelEfforts.some(
-                        (item) => item.id === effort.id
-                      );
-                      const checked =
-                        isCurrentModel && selectedEffortId === effort.id;
-
-                      return (
-                        <td
-                          key={`${model.id}:${effort.id}`}
-                          className="px-1 py-1 text-center align-middle"
-                        >
-                          {available ? (
-                            <SelectionRadio
-                              checked={checked}
-                              label={`${model.name}, ${effort.name}`}
-                              toneId={effort.id}
-                              onSelect={() => onSelect(model.id, effort.id)}
-                            />
-                          ) : (
-                            <span className="text-muted-foreground/35">-</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="border-t border-border/60 bg-muted/15 px-2.5 py-1.5 text-[8px] text-muted-foreground">
-        Auto uses the model default. Radios only appear where that effort is
-        supported.
-      </div>
-    </>
   );
 }
 
@@ -865,8 +650,8 @@ export function RuntimeSelectionBanner({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-lg px-2.5 py-2",
-        isTerminal ? "bg-zinc-900 text-zinc-100" : effortTone.bg,
+        "flex items-center gap-2 px-2.5 py-2",
+        isTerminal && "rounded-lg bg-zinc-900 text-zinc-100",
         className
       )}
     >
@@ -956,9 +741,11 @@ interface RuntimeMatrixPickerProps {
 }
 
 /**
- * Inline provider/model/effort matrix — same UI the task composer runtime
- * picker renders inside its dropdown, but usable as an inline component.
- * Reused by Settings → Providers for default selection.
+ * Inline provider/model/effort picker rendered as a sentence —
+ * "Run agents with <provider> using <model> at <effort> effort." Each chip
+ * expands an option panel below the sentence. Same component the task
+ * composer runtime picker renders inside its dropdown; reused by Settings →
+ * Providers for default selection.
  */
 export function RuntimeMatrixPicker({
   providers,
@@ -984,8 +771,6 @@ export function RuntimeMatrixPicker({
     return [...ready, ...unready];
   }, [providers, includeUnavailable]);
 
-  const [pickedProviderId, setPickedProviderId] = useState<string | null>(null);
-
   const readyProviderIds = useMemo(
     () =>
       new Set(
@@ -996,55 +781,10 @@ export function RuntimeMatrixPicker({
     [selectableProviders]
   );
 
-  // The default tab is DERIVED, not synced via an effect
-  // (react-hooks/set-state-in-effect): until the user explicitly picks a
-  // provider tab, follow the confirmed selection when it's ready, else the
-  // first ready provider — which also keeps the tab valid if the provider
-  // list changes underneath.
-  const defaultProviderId = useMemo(() => {
-    const requested = resolveSelectedProvider(
-      selectableProviders,
-      value.providerId ?? undefined,
-      undefined
-    );
-    if (requested && readyProviderIds.has(requested.id)) {
-      return requested.id;
-    }
-    const firstReady = selectableProviders.find((provider) =>
-      readyProviderIds.has(provider.id)
-    );
-    return firstReady?.id ?? requested?.id ?? null;
-  }, [readyProviderIds, selectableProviders, value.providerId]);
-  const activeProviderId = pickedProviderId ?? defaultProviderId;
-
-  // Prop-driven selection: when the confirmed provider changes (e.g. the
-  // parent loads a saved default), drop the manual pick so the tab follows
-  // it — adjust state during render instead of in an effect, the pattern
-  // from react.dev/learn/you-might-not-need-an-effect.
-  const [prevValueProviderId, setPrevValueProviderId] = useState(
-    value.providerId ?? null
-  );
-  if ((value.providerId ?? null) !== prevValueProviderId) {
-    setPrevValueProviderId(value.providerId ?? null);
-    setPickedProviderId(null);
-  }
-
-  const activeProviderIdValue = useMemo(() => {
-    const explicit = resolveSelectedProvider(
-      selectableProviders,
-      activeProviderId || undefined,
-      undefined
-    );
-    if (explicit && readyProviderIds.has(explicit.id)) return explicit.id;
-    const requestedReady = value.providerId && readyProviderIds.has(value.providerId)
-      ? value.providerId
-      : null;
-    if (requestedReady) return requestedReady;
-    const firstReady = selectableProviders.find((provider) =>
-      readyProviderIds.has(provider.id)
-    );
-    return firstReady?.id ?? explicit?.id;
-  }, [activeProviderId, readyProviderIds, selectableProviders, value.providerId]);
+  // Which chip's option panel is expanded below the sentence.
+  const [openPanel, setOpenPanel] = useState<
+    "provider" | "model" | "effort" | null
+  >(null);
 
   const currentProvider = useMemo(
     () =>
@@ -1056,6 +796,11 @@ export function RuntimeMatrixPicker({
     () =>
       resolveSelectedModel(currentProvider, value.model ?? undefined, undefined),
     [currentProvider, value.model]
+  );
+
+  const currentEffortLevels = useMemo(
+    () => getModelEffortLevels(currentProvider, currentModel?.id),
+    [currentProvider, currentModel?.id]
   );
 
   if (selectableProviders.length === 0) {
@@ -1074,7 +819,7 @@ export function RuntimeMatrixPicker({
   const setRuntimeMode = (nextMode: RuntimeMode) => {
     const targetProviderId =
       value.providerId ||
-      activeProviderIdValue ||
+      currentProvider?.id ||
       selectableProviders[0]?.id ||
       "";
     if (!targetProviderId) return;
@@ -1094,6 +839,62 @@ export function RuntimeMatrixPicker({
   };
 
   const isTerminal = runtimeMode === "terminal";
+
+  const togglePanel = (panel: "provider" | "model" | "effort") =>
+    setOpenPanel((prev) => (prev === panel ? null : panel));
+
+  const pickProvider = (provider: ProviderInfo) => {
+    setOpenPanel(null);
+    if (provider.id === currentProvider?.id) return;
+    onChange({
+      providerId: provider.id,
+      model: resolveProviderModel(provider, undefined, undefined)?.id,
+      effort: undefined,
+      runtimeMode: "native",
+    });
+  };
+
+  const pickModel = (modelId: string) => {
+    setOpenPanel(null);
+    if (!currentProvider) return;
+    // Keep the current effort only if the new model supports it.
+    const supported = getModelEffortLevels(currentProvider, modelId);
+    const keepEffort =
+      value.effort && supported.some((level) => level.id === value.effort)
+        ? value.effort
+        : undefined;
+    onChange({
+      providerId: currentProvider.id,
+      model: modelId,
+      effort: keepEffort,
+      runtimeMode: "native",
+    });
+  };
+
+  const pickEffort = (effortId?: string) => {
+    setOpenPanel(null);
+    if (!currentProvider) return;
+    onChange({
+      providerId: currentProvider.id,
+      model: currentModel?.id,
+      effort: effortId,
+      runtimeMode: "native",
+    });
+  };
+
+  const currentEffort = resolveProviderEffort(
+    currentProvider,
+    currentModel?.id,
+    value.effort ?? undefined,
+    undefined
+  );
+  const effortName = value.effort
+    ? currentEffort?.name || formatEffortName(value.effort) || value.effort
+    : t("runtime:auto");
+  const effortTone = getEffortTone(value.effort ?? AUTO_EFFORT_ID);
+
+  const chipClass =
+    "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-semibold text-foreground transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -1116,7 +917,6 @@ export function RuntimeMatrixPicker({
             )}
             title={t("runtime:nativeTranscriptTitle")}
           >
-            <Sparkles className="h-4 w-4" />
             <span>{t("runtime:native")}</span>
           </button>
           <button
@@ -1142,104 +942,260 @@ export function RuntimeMatrixPicker({
         <TerminalProviderPanel
           providers={selectableProviders}
           readyProviderIds={readyProviderIds}
-          selectedProviderId={value.providerId ?? activeProviderIdValue ?? null}
+          selectedProviderId={value.providerId ?? currentProvider?.id ?? null}
           onSelect={(providerId) =>
             onChange({ providerId, runtimeMode: "terminal" })
           }
         />
       ) : (
-        <Tabs
-          value={activeProviderIdValue}
-          onValueChange={setPickedProviderId}
-          className="gap-0"
-        >
-          <div className="overflow-hidden rounded-lg border border-border/70 bg-background">
-            <div className="flex px-1.5 pt-1.5 overflow-x-auto scrollbar-none">
-              <TabsList
-                variant="line"
-                aria-label={t("runtime:providers")}
-                className="h-auto w-max min-w-full justify-start gap-1.5 rounded-none bg-transparent p-0 !border-b-0"
-              >
-                {selectableProviders.map((provider) => {
-                  const ready = readyProviderIds.has(provider.id);
-                  const isActive = activeProviderIdValue === provider.id;
-                  const unreadyReason = describeProviderUnreadyReason(provider);
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-background">
+          <div className="flex items-center gap-x-1.5 whitespace-nowrap px-3 py-2.5 text-[12.5px] [&>span]:shrink-0">
+            <span className="text-muted-foreground">
+              {t("runtime:sentenceRunWith")}
+            </span>
+            <button
+              type="button"
+              aria-expanded={openPanel === "provider"}
+              onClick={() => togglePanel("provider")}
+              className={cn(
+                chipClass,
+                "shrink-0 bg-muted/70 hover:bg-muted",
+                openPanel === "provider" && "bg-muted"
+              )}
+            >
+              {currentProvider ? (
+                <>
+                  <ProviderGlyph
+                    icon={currentProvider.icon}
+                    className="h-3 w-3"
+                  />
+                  <span>{currentProvider.name}</span>
+                </>
+              ) : (
+                <span>{t("runtime:noProvider")}</span>
+              )}
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 text-muted-foreground transition-transform",
+                  openPanel === "provider" && "rotate-180"
+                )}
+              />
+            </button>
+            <span className="text-muted-foreground">
+              {t("runtime:sentenceUsing")}
+            </span>
+            <button
+              type="button"
+              aria-expanded={openPanel === "model"}
+              onClick={() => togglePanel("model")}
+              className={cn(
+                chipClass,
+                "min-w-0 bg-muted/70 hover:bg-muted",
+                openPanel === "model" && "bg-muted"
+              )}
+            >
+              <span className="min-w-0 max-w-[14rem] truncate">
+                {currentModel?.name || t("runtime:chooseModel")}
+              </span>
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 text-muted-foreground transition-transform",
+                  openPanel === "model" && "rotate-180"
+                )}
+              />
+            </button>
+            {currentEffortLevels.length > 0 && (
+              <>
+                <span className="text-muted-foreground">
+                  {t("runtime:sentenceAt")}
+                </span>
+                <button
+                  type="button"
+                  aria-expanded={openPanel === "effort"}
+                  onClick={() => togglePanel("effort")}
+                  className={cn(
+                    chipClass,
+                    "shrink-0",
+                    effortTone.bg,
+                    effortTone.header
+                  )}
+                >
+                  <span
+                    className={cn("size-1.5 rounded-full", effortTone.dot)}
+                  />
+                  <span>{effortName}</span>
+                  <ChevronDown
+                    className={cn(
+                      "h-3 w-3 opacity-60 transition-transform",
+                      openPanel === "effort" && "rotate-180"
+                    )}
+                  />
+                </button>
+                <span className="text-muted-foreground">
+                  {t("runtime:sentenceEffort")}
+                </span>
+              </>
+            )}
+          </div>
+
+          {openPanel === "provider" && (
+            <div className="max-h-[15rem] overflow-y-auto border-t border-border/60">
+              {selectableProviders.map((provider) => {
+                const ready = readyProviderIds.has(provider.id);
+                const selected = currentProvider?.id === provider.id;
+                const unreadyReason = describeProviderUnreadyReason(provider);
+                return (
+                  <button
+                    key={provider.id}
+                    type="button"
+                    disabled={!ready}
+                    onClick={() => pickProvider(provider)}
+                    title={
+                      ready
+                        ? provider.name
+                        : `${provider.name} — ${unreadyReason || t("runtime:notAvailable")}`
+                    }
+                    className={cn(
+                      "flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors",
+                      selected
+                        ? "bg-accent text-accent-foreground"
+                        : "hover:bg-muted/50",
+                      !ready && "cursor-not-allowed opacity-50 grayscale"
+                    )}
+                  >
+                    <ProviderGlyph
+                      icon={provider.icon}
+                      className="h-3.5 w-3.5 shrink-0"
+                    />
+                    <span className="min-w-0 flex-1 truncate text-[12px] font-medium">
+                      {provider.name}
+                    </span>
+                    {!ready && (
+                      <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-muted-foreground/80">
+                        {t("runtime:notAvailable")}
+                      </span>
+                    )}
+                    {selected && <Check className="h-3.5 w-3.5 shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {openPanel === "model" && currentProvider && (
+            <div className="border-t border-border/60">
+              {currentProvider.dynamicModels ? (
+                <ProviderModelCombobox
+                  provider={currentProvider}
+                  currentProviderId={currentProvider.id}
+                  currentModelId={currentModel?.id}
+                  selectedEffortId={value.effort ?? undefined}
+                  onSelect={(modelId, effortId) => {
+                    setOpenPanel(null);
+                    onChange({
+                      providerId: currentProvider.id,
+                      model: modelId,
+                      effort: effortId,
+                      runtimeMode: "native",
+                    });
+                  }}
+                />
+              ) : (currentProvider.models || []).length === 0 ? (
+                <div className="px-3 py-5 text-center text-[10px] text-muted-foreground">
+                  No models are available for this provider yet.
+                </div>
+              ) : (
+                <div className="max-h-[15rem] overflow-y-auto">
+                  {(currentProvider.models || []).map((model) => {
+                    const selected = currentModel?.id === model.id;
+                    return (
+                      <button
+                        key={model.id}
+                        type="button"
+                        onClick={() => pickModel(model.id)}
+                        className={cn(
+                          "flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors",
+                          selected
+                            ? "bg-accent text-accent-foreground"
+                            : "hover:bg-muted/50"
+                        )}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <span className="flex items-center gap-1.5 text-[12px] font-medium">
+                            {model.name}
+                            {model.requires === "api_key" ? (
+                              <span
+                                title={t("runtime:ptyWarningTitle")}
+                                className="inline-flex items-center rounded-sm border border-amber-500/40 bg-amber-500/10 px-1 py-px text-[8.5px] font-medium uppercase tracking-wide text-amber-600 dark:text-amber-400"
+                              >
+                                API key
+                              </span>
+                            ) : null}
+                          </span>
+                          {model.description ? (
+                            <span className="block truncate text-[10px] text-muted-foreground">
+                              {model.description}
+                            </span>
+                          ) : null}
+                        </div>
+                        {selected && <Check className="h-3.5 w-3.5 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {openPanel === "effort" &&
+            currentProvider &&
+            currentEffortLevels.length > 0 && (
+              <div className="max-h-[15rem] overflow-y-auto border-t border-border/60">
+                {[
+                  { id: AUTO_EFFORT_ID, name: t("runtime:auto") },
+                  ...currentEffortLevels,
+                ].map((effort) => {
+                  const isAuto = effort.id === AUTO_EFFORT_ID;
+                  const selected = isAuto
+                    ? !value.effort
+                    : value.effort === effort.id;
+                  const tone = getEffortTone(effort.id);
+                  const label = isAuto
+                    ? t("runtime:auto")
+                    : formatEffortName(effort.name) || effort.name;
                   return (
-                    <TabsTrigger
-                      key={provider.id}
-                      value={provider.id}
-                      disabled={!ready}
-                      aria-disabled={!ready}
+                    <button
+                      key={effort.id}
+                      type="button"
+                      onClick={() => pickEffort(isAuto ? undefined : effort.id)}
                       title={
-                        ready
-                          ? provider.name
-                          : `${provider.name} — ${unreadyReason || t("runtime:notAvailable")}`
+                        "description" in effort ? effort.description : undefined
                       }
                       className={cn(
-                        "relative -mb-px flex h-7 flex-none items-center gap-1.5 rounded-t-md rounded-b-none border-0 !bg-muted/60 py-1 text-[9px] font-medium text-muted-foreground shadow-none after:hidden data-active:z-10 data-active:!bg-background data-active:text-foreground data-active:shadow-none",
-                        // Active tabs widen to show icon + name; inactive
-                        // collapse to icon-only so all 8 providers fit without
-                        // horizontal scroll. Name still available via title.
-                        isActive ? "px-2.5" : "justify-center px-1.5",
-                        ready
-                          ? "hover:text-foreground"
-                          : "cursor-not-allowed opacity-50 grayscale data-[disabled]:pointer-events-none"
+                        "flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors",
+                        selected ? "bg-accent" : "hover:bg-muted/50"
                       )}
                     >
-                      <ProviderGlyph icon={provider.icon} className="h-3 w-3" />
-                      {isActive && <span>{provider.name}</span>}
-                      {isActive && !ready && (
-                        <span className="ml-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-muted-foreground/80">
-                          Not ready
-                        </span>
+                      <span
+                        className={cn("size-2 shrink-0 rounded-full", tone.dot)}
+                      />
+                      <span
+                        className={cn(
+                          "min-w-0 flex-1 text-[12px] font-medium",
+                          tone.header
+                        )}
+                      >
+                        {label}
+                      </span>
+                      {selected && (
+                        <Check className="h-3.5 w-3.5 shrink-0 text-foreground" />
                       )}
-                    </TabsTrigger>
+                    </button>
                   );
                 })}
-              </TabsList>
-            </div>
-
-            {selectableProviders.map((provider) => (
-              <TabsContent
-                key={provider.id}
-                value={provider.id}
-                className="mt-0 bg-background"
-              >
-                {provider.dynamicModels ? (
-                  <ProviderModelCombobox
-                    provider={provider}
-                    currentProviderId={currentProvider?.id}
-                    currentModelId={currentModel?.id}
-                    selectedEffortId={value.effort ?? undefined}
-                    onSelect={(modelId, effortId) =>
-                      onChange({
-                        providerId: provider.id,
-                        model: modelId,
-                        effort: effortId,
-                        runtimeMode: "native",
-                      })
-                    }
-                  />
-                ) : (
-                  <ProviderRuntimeMatrix
-                    provider={provider}
-                    currentProviderId={currentProvider?.id}
-                    currentModelId={currentModel?.id}
-                    selectedEffortId={value.effort ?? undefined}
-                    onSelect={(modelId, effortId) =>
-                      onChange({
-                        providerId: provider.id,
-                        model: modelId,
-                        effort: effortId,
-                        runtimeMode: "native",
-                      })
-                    }
-                  />
-                )}
-              </TabsContent>
-            ))}
-          </div>
-        </Tabs>
+              </div>
+            )}
+        </div>
       )}
     </div>
   );
@@ -1495,21 +1451,6 @@ export function TaskRuntimePicker({
     ]
   );
 
-  const selectionSummary = currentProvider
-    ? [
-        currentModel?.name || currentProvider.name,
-        currentEffort?.name ||
-          (normalizedValue.effort
-            ? formatEffortName(normalizedValue.effort)
-            : t("runtime:defaultLabel")),
-        currentProvider.name,
-      ]
-        .filter(Boolean)
-        .join(" · ")
-    : loading
-      ? t("runtime:loadingProviders")
-      : t("runtime:noProvidersAvailable");
-
   // Audit #052: the prior tooltip "Task model: Claude Opus 4.7 · Medium ·
   // Claude Code" read as a compound model identifier, sending users to
   // search Anthropic for a non-existent product. Split the three concepts
@@ -1630,7 +1571,7 @@ export function TaskRuntimePicker({
 
       <DropdownMenuContent
         align={align}
-        className="w-[min(32rem,calc(100vw-1rem))] min-w-[17rem] max-w-[calc(100vw-1rem)] p-0"
+        className="w-[min(38rem,calc(100vw-1rem))] min-w-[17rem] max-w-[calc(100vw-1rem)] p-0"
       >
         <DropdownMenuGroup>
           <RuntimeSelectionBanner

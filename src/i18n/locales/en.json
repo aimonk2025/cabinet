@@ -206,7 +206,12 @@
     "loadingAvailableProviders": "Loading available providers…",
     "triggerSummary": "Model: {{model}} · Effort: {{effort}} · via {{provider}}",
     "triggerSystemDefault": "Task model — using system default (click to pick)",
-    "clickToLaunch": "Click to launch {{name}} in a PTY terminal"
+    "clickToLaunch": "Click to launch {{name}} in a PTY terminal",
+    "sentenceRunWith": "Run agents with",
+    "sentenceUsing": "using",
+    "sentenceAt": "at",
+    "sentenceEffort": "effort",
+    "chooseModel": "Choose model"
   },
   "breakingChanges": {
     "agentsFullAccess": "Agents run with full access.",
