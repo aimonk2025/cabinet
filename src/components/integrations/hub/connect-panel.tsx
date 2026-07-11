@@ -138,6 +138,13 @@ export function ConnectPanel({
   const [authState, setAuthState] = useState<"unknown" | "authenticated" | "needs-auth">(
     "unknown",
   );
+  // User-facing reason a connection failed (e.g. Slack's MCP toggle being off).
+  // Only ever set alongside "needs-auth"; absent when the cause isn't known.
+  const [authDetail, setAuthDetail] = useState<string | undefined>();
+  // On-demand "does this actually work?" probe — has an agent call a real tool
+  // so the user sees evidence in their own words instead of a green chip.
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<string | undefined>();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const stopPolling = useCallback(() => {
     if (pollRef.current) {
@@ -197,8 +204,10 @@ export function ConnectPanel({
       setAuthState(
         !j.applicable ? "unknown" : j.authenticated ? "authenticated" : "needs-auth",
       );
+      setAuthDetail(typeof j.detail === "string" ? j.detail : undefined);
     } catch {
       setAuthState("unknown");
+      setAuthDetail(undefined);
     }
   }, [isM365, item.id]);
 
@@ -928,8 +937,41 @@ export function ConnectPanel({
       )}
 
       {entry.signinKind != null && !isM365 && authState === "authenticated" && (
-        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-emerald-600 dark:text-emerald-400">
-          <Check className="h-3.5 w-3.5 shrink-0" /> Signed in — ready for your agents.
+        <>
+          <p className="mt-2 flex items-center gap-1.5 text-[12px] text-emerald-600 dark:text-emerald-400">
+            <Check className="h-3.5 w-3.5 shrink-0" /> Signed in — ready for your agents.
+          </p>
+          <div className="mt-2">
+            <button
+              type="button"
+              disabled={testing}
+              onClick={() => {
+                setTesting(true);
+                setTestResult(undefined);
+                void fetch("/api/agents/config/mcp-catalog/verify", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ id: item.id }),
+                })
+                  .then((r) => r.json())
+                  .then((j) => setTestResult(j.summary as string))
+                  .catch(() => setTestResult("Couldn't reach the verifier."))
+                  .finally(() => setTesting(false));
+              }}
+              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[12px] text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+            >
+              {testing ? "Checking…" : "Test connection"}
+            </button>
+            {testResult && (
+              <p className="mt-1.5 text-[12.5px] leading-relaxed text-foreground/80">{testResult}</p>
+            )}
+          </div>
+        </>
+      )}
+
+      {entry.signinKind != null && !isM365 && authState === "needs-auth" && authDetail && (
+        <p className="mt-2 rounded-md border border-l-[3px] border-amber-300 border-l-amber-500 bg-amber-50 px-2.5 py-2 text-[12.5px] leading-relaxed text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
+          {authDetail}
         </p>
       )}
 
