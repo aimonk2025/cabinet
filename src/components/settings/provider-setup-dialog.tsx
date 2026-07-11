@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Check, X, ExternalLink, Copy, ChevronDown, Sparkles } from "lucide-react";
+import { Loader2, Check, X, ExternalLink, Copy, ChevronDown } from "lucide-react";
 import { useAppStore } from "@/stores/app-store";
 import { useLocale } from "@/i18n/use-locale";
 import { cn } from "@/lib/utils";
@@ -416,9 +416,7 @@ function ReadyPanel({ name, iconSrc, t, onClose }: { name: string; iconSrc?: str
         </span>
       </div>
       <div>
-        <h3 className="flex items-center justify-center gap-1.5 text-lg font-semibold">
-          <Sparkles className="h-4 w-4 text-amber-500" /> {t("settings:providerSetup.readyHeading", { name })}
-        </h3>
+        <h3 className="text-lg font-semibold">{t("settings:providerSetup.readyHeading", { name })}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{t("settings:providerSetup.readyBody", { name })}</p>
         <p className="mt-0.5 text-xs text-muted-foreground/70">{t("settings:providerSetup.whatNext")}</p>
       </div>

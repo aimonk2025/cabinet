@@ -72,7 +72,7 @@ interface FloatingEmoji {
 }
 
 const FLOATING_EMOJIS: FloatingEmoji[] = [
-  { glyph: "✨", x: 6, y: 12, size: 64, rotate: -8, variant: "a", delay: 0 },
+  { glyph: "💬", x: 6, y: 12, size: 64, rotate: -8, variant: "a", delay: 0 },
   { glyph: "📝", x: 18, y: 78, size: 72, rotate: 6, variant: "b", delay: 200 },
   { glyph: "💌", x: 88, y: 18, size: 68, rotate: 12, variant: "c", delay: 400 },
   { glyph: "💡", x: 10, y: 50, size: 58, rotate: -4, variant: "b", delay: 600 },
