@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { AlertTriangle, Check, Copy, ExternalLink, Info } from "lucide-react";
 import type { CatalogSetupStep } from "@/lib/agents/mcp-catalog";
+import { cn } from "@/lib/utils";
 
 /**
  * Numbered, vertical setup guide for an integration. Renders the catalog's
@@ -103,24 +104,24 @@ function Callout({ tone, body }: { tone: "warning" | "info"; body: string }) {
   const Icon = warn ? AlertTriangle : Info;
   return (
     <div
-      className={[
+      className={cn(
         "mt-2.5 flex gap-2 rounded-md border border-l-[3px] px-2.5 py-2",
         warn
           ? "border-amber-300 border-l-amber-500 bg-amber-50 dark:border-amber-500/40 dark:border-l-amber-500 dark:bg-amber-500/10"
           : "border-border border-l-muted-foreground/50 bg-muted/40",
-      ].join(" ")}
+      )}
     >
       <Icon
-        className={[
+        className={cn(
           "mt-px h-3.5 w-3.5 shrink-0",
           warn ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground",
-        ].join(" ")}
+        )}
       />
       <p
-        className={[
+        className={cn(
           "text-[12.5px] leading-relaxed",
           warn ? "text-amber-900 dark:text-amber-100" : "text-foreground/80",
-        ].join(" ")}
+        )}
       >
         {body}
       </p>
@@ -133,11 +134,21 @@ function Callout({ tone, body }: { tone: "warning" | "info"; body: string }) {
  * the *frame* carries the theme — that way one asset reads correctly in both
  * themes without dual assets or muddy CSS filters.
  */
-function StepImage({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
+function StepImage({
+  src,
+  alt,
+  caption,
+  frameLabel,
+}: {
+  src: string;
+  alt: string;
+  caption?: string;
+  frameLabel?: string;
+}) {
   return (
     <figure className="mt-3 max-w-sm overflow-hidden rounded-lg border border-border bg-background">
       <figcaption className="border-b border-border bg-muted/40 px-2.5 py-1.5 text-[11px] text-muted-foreground">
-        What you&apos;ll see in Slack
+        {frameLabel ?? "What you'll see"}
       </figcaption>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt={alt} className="block w-full" loading="lazy" />

@@ -66,7 +66,7 @@ export interface CatalogSetupStep {
    */
   callout?: { tone: "warning" | "info"; body: string };
   /** Cropped screenshot of the real third-party control this step refers to. */
-  image?: { src: string; alt: string; caption?: string };
+  image?: { src: string; alt: string; caption?: string; frameLabel?: string };
   /** Collapsed escape hatch for users who can't or won't use `action`. */
   fallback?: { summary: string; body: string; copy?: string };
 }
@@ -279,6 +279,7 @@ const SLACK: CatalogEntry = {
         src: "/integrations/slack/01-create.png",
         alt: "Slack's review summary dialog showing User Scopes (6) and Redirect URLs (1), with a Create button",
         caption: "Slack shows you exactly what it's about to create — 6 scopes, one redirect URL.",
+        frameLabel: "What you'll see in Slack",
       },
       fallback: {
         summary: "Prefer to paste it yourself?",
@@ -293,6 +294,7 @@ const SLACK: CatalogEntry = {
         src: "/integrations/slack/02-install.png",
         alt: "Slack's permission review screen for the Cabinet app with Cancel and Allow buttons",
         caption: "Approving here is what gives your agents access.",
+        frameLabel: "What you'll see in Slack",
       },
     },
     {
@@ -302,6 +304,7 @@ const SLACK: CatalogEntry = {
         src: "/integrations/slack/03-credentials.png",
         alt: "Slack's App Credentials panel showing Client ID and a masked Client Secret with a Show button",
         caption: "The Client Secret is hidden until you press Show.",
+        frameLabel: "What you'll see in Slack",
       },
       callout: {
         tone: "info",
