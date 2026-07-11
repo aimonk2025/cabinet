@@ -15,6 +15,9 @@ interface WebTerminalProps {
   // "codex login"). Ignored on reconnect. Lets a caller drive a specific CLI
   // in an embedded terminal without a bespoke adapter.
   initialInput?: string;
+  // Observe decoded terminal output (e.g. to scrape a login URL). Best-effort,
+  // fired per chunk; the caller does its own accumulation/parsing.
+  onData?: (text: string) => void;
   onClose: () => void;
 }
 
@@ -73,10 +76,13 @@ export function WebTerminal({
   adapterType,
   cwd,
   initialInput,
+  onData,
   reconnect,
   themeSurface = "terminal",
   onClose,
 }: WebTerminalProps) {
+  const onDataRef = useRef(onData);
+  useEffect(() => { onDataRef.current = onData; }, [onData]);
   const termRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const xtermRef = useRef<import("@xterm/xterm").Terminal | null>(null);
@@ -200,10 +206,15 @@ export function WebTerminal({
           const data = event.data;
           if (data instanceof ArrayBuffer) {
             if (data.byteLength === 0) return;
-            writeToTerminal(new Uint8Array(data));
+            const bytes = new Uint8Array(data);
+            writeToTerminal(bytes);
+            if (onDataRef.current) {
+              try { onDataRef.current(new TextDecoder().decode(bytes)); } catch { /* ignore */ }
+            }
           } else if (typeof data === "string") {
             if (data.length === 0) return;
             writeToTerminal(replacePastedTextNotice(data, displayPrompt));
+            onDataRef.current?.(data);
           }
           // Silently skip other types (Blob etc.) — binaryType is set to
           // "arraybuffer" so we never expect them.

@@ -1820,7 +1820,12 @@
       "signedInCheck": "I've signed in",
       "stepInstall": "1. Install",
       "stepLogin": "2. Sign in",
-      "stepVerify": "3. Check it works"
+      "stepVerify": "3. Check it works",
+      "openLinkHint": "Open this link to sign in, then come back:",
+      "openInBrowser": "Open in browser",
+      "showTerminal": "Show terminal",
+      "hideTerminal": "Hide terminal",
+      "copyLink": "Copy link"
     }
   },
   "sidebar": {

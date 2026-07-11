@@ -69,8 +69,11 @@ export const grokCliProvider: AgentProvider = {
     },
     {
       title: "Log in",
-      detail: "Sign in with your X account. A browser window opens; approve it, then come back.",
-      command: "grok login --oauth",
+      detail: "Sign in with your X account: open the link shown, approve, then come back.",
+      // device-auth prints a URL + code rather than depending on a browser
+      // auto-opening (which is unreliable inside Electron). Cabinet surfaces the
+      // URL with Open/Copy buttons.
+      command: "grok login --device-auth",
     },
     {
       title: "Verify setup",

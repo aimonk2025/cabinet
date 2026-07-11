@@ -220,6 +220,17 @@ function ProviderSetupPanel({ providerId }: { providerId: string }) {
   );
 }
 
+// Open a URL in the OS default browser. Inside Electron, route through the
+// CabinetDesktop bridge (shell.openExternal) so it never opens an in-app
+// window; in a plain browser fall back to window.open.
+function openExternal(url: string) {
+  const bridge = (window as unknown as {
+    CabinetDesktop?: { openExternal?: (u: string) => void };
+  }).CabinetDesktop;
+  if (bridge?.openExternal) bridge.openExternal(url);
+  else window.open(url, "_blank", "noopener,noreferrer");
+}
+
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -406,9 +417,17 @@ function ClaudeLogin({ onDone }: { onDone: () => void }) {
       )}
       {(phase === "await-code" || phase === "submitting") && (
         <div className="space-y-2">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs text-accent hover:bg-muted">
-            <ExternalLink className="h-3.5 w-3.5" />{t("settings:providerSetup.openClaudeLogin")}
-          </a>
+          {/* Open in the OS browser (Electron-safe) + copy fallback, rather than a
+              raw target=_blank that Electron may capture into an in-app window. */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => openExternal(url)}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />{t("settings:providerSetup.openClaudeLogin")}
+            </button>
+            <CopyButton text={url} />
+          </div>
           <p className="text-[11px] text-muted-foreground">{t("settings:providerSetup.pasteCodeHint")}</p>
           <div className="flex items-center gap-1.5">
             <input
@@ -437,7 +456,20 @@ function TerminalLogin({ command, onDone }: { command: string; onDone: () => voi
   const { t } = useLocale();
   const [sessionId] = useState(() => `provider-login-${Date.now()}`);
   const [started, setStarted] = useState(false);
-  const [showTerminal, setShowTerminal] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(true);
+  const [url, setUrl] = useState<string | null>(null);
+  const outBuf = useRef("");
+
+  // Scrape the first sign-in URL the CLI prints, so we can open it in the OS
+  // browser ourselves (reliable inside Electron) and offer copy — instead of
+  // relying on the CLI auto-opening a window.
+  const handleOutput = (text: string) => {
+    if (url) return;
+    outBuf.current = (outBuf.current + text).slice(-4000);
+    const m = outBuf.current.match(/https?:\/\/[^\s"'`\x1b]+/);
+    if (m) setUrl(m[0].replace(/[)\].,]+$/, ""));
+  };
+
   return (
     <section className="space-y-2">
       <h3 className="text-xs font-semibold text-foreground/80">{t("settings:providerSetup.loginTitle")}</h3>
@@ -453,22 +485,40 @@ function TerminalLogin({ command, onDone }: { command: string; onDone: () => voi
         </>
       ) : (
         <>
-          <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t("settings:providerSetup.signInHint")}
-          </p>
-          {/* The terminal drives `<cli> login`; for browser OAuth it mostly opens
-              a window, so keep it collapsed by default — the user acts in the browser. */}
+          {/* Captured sign-in link: open in the OS browser (Electron-safe) or copy. */}
+          {url ? (
+            <div className="space-y-1 rounded-md border border-border bg-muted/40 p-2">
+              <p className="text-[11px] text-muted-foreground">{t("settings:providerSetup.openLinkHint")}</p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => openExternal(url)}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:opacity-90"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> {t("settings:providerSetup.openInBrowser")}
+                </button>
+                <span className="flex-1 truncate rounded border border-border bg-background px-2 py-1 font-mono text-[10.5px]">{url}</span>
+                <CopyButton text={url} />
+              </div>
+            </div>
+          ) : (
+            <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t("settings:providerSetup.signInHint")}
+            </p>
+          )}
+          {/* Interactive terminal, shown by default so the user can read the code
+              or type anything the CLI asks for. Collapsible. */}
           <button
             onClick={() => setShowTerminal((v) => !v)}
             className="text-[10px] text-muted-foreground underline hover:text-foreground"
           >
-            {showTerminal ? t("settings:providerSetup.hideDetails") : t("settings:providerSetup.showDetails")}
+            {showTerminal ? t("settings:providerSetup.hideTerminal") : t("settings:providerSetup.showTerminal")}
           </button>
           <div className={showTerminal ? "h-56 overflow-hidden rounded-md border border-border" : "h-px w-px overflow-hidden opacity-0"}>
             <WebTerminal
               sessionId={sessionId}
               adapterType="shell"
               initialInput={command}
+              onData={handleOutput}
               themeSurface="page"
               onClose={() => { /* session ended; user clicks the button below */ }}
             />
