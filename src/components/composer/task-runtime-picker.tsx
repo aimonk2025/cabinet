@@ -10,7 +10,6 @@ import {
   RefreshCw,
   Search,
   Terminal,
-  X,
 } from "lucide-react";
 import { ProviderGlyph } from "@/components/agents/provider-glyph";
 import { cn } from "@/lib/utils";
@@ -24,7 +23,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getDefaultAdapterTypeForProviderInfo } from "@/lib/agents/adapter-options";
@@ -597,123 +595,6 @@ export interface RuntimeMatrixValue {
   runtimeMode?: RuntimeMode | null;
 }
 
-interface RuntimeSelectionBannerProps {
-  providers: ProviderInfo[];
-  value: RuntimeMatrixValue;
-  label?: string;
-  trailing?: React.ReactNode;
-  className?: string;
-}
-
-/**
- * Colored summary row showing the currently selected provider/model/effort.
- * Same look used in the task composer dropdown, now reused in settings.
- */
-export function RuntimeSelectionBanner({
-  providers,
-  value,
-  label,
-  trailing,
-  className,
-}: RuntimeSelectionBannerProps) {
-  const { t } = useLocale();
-  const effectiveLabel = label ?? t("runtime:selectedModelLabel");
-  const currentProvider = useMemo(
-    () =>
-      resolveSelectedProvider(providers, value.providerId ?? undefined, undefined),
-    [providers, value.providerId]
-  );
-
-  const currentModel = useMemo(
-    () =>
-      resolveSelectedModel(currentProvider, value.model ?? undefined, undefined),
-    [currentProvider, value.model]
-  );
-
-  const currentEffort = useMemo(
-    () =>
-      resolveProviderEffort(
-        currentProvider,
-        currentModel?.id,
-        value.effort ?? undefined,
-        undefined
-      ),
-    [currentModel?.id, currentProvider, value.effort]
-  );
-
-  const effortTone = getEffortTone(value.effort ?? AUTO_EFFORT_ID);
-  const effortName =
-    currentEffort?.name ||
-    (value.effort ? formatEffortName(value.effort) : t("runtime:auto"));
-  const isTerminal = value.runtimeMode === "terminal";
-
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-2 px-2.5 py-2",
-        isTerminal && "rounded-lg bg-zinc-900 text-zinc-100",
-        className
-      )}
-    >
-      <span
-        className={cn(
-          "shrink-0 text-[9px] font-semibold uppercase tracking-wide",
-          isTerminal ? "text-zinc-400" : "text-muted-foreground/60"
-        )}
-      >
-        {effectiveLabel}
-      </span>
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {currentProvider ? (
-          <>
-            <div
-              className={cn(
-                "flex size-5 shrink-0 items-center justify-center rounded border",
-                isTerminal
-                  ? "border-zinc-700 bg-zinc-800 text-zinc-300"
-                  : "border-border/70 bg-background text-muted-foreground"
-              )}
-            >
-              {isTerminal ? (
-                <Terminal className="h-2.5 w-2.5" />
-              ) : (
-                <ProviderGlyph icon={currentProvider.icon} className="h-2.5 w-2.5" />
-              )}
-            </div>
-            {isTerminal ? (
-              <>
-                <span className="truncate text-[11px] font-medium text-zinc-100">
-                  Terminal
-                </span>
-                <span className="shrink-0 text-[9px] text-zinc-500">·</span>
-                <span className="shrink-0 text-[10px] font-medium text-zinc-300">
-                  {currentProvider.name}
-                </span>
-                <span className="shrink-0 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-emerald-400">
-                  PTY
-                </span>
-              </>
-            ) : (
-              <>
-                <span className={cn("truncate text-[11px] font-medium", effortTone.header)}>
-                  {currentModel?.name || currentProvider.name}
-                </span>
-                <span className="shrink-0 text-[9px] text-muted-foreground/50">·</span>
-                <span className={cn("shrink-0 text-[9px] font-medium", effortTone.header)}>
-                  {effortName}
-                </span>
-              </>
-            )}
-          </>
-        ) : (
-          <span className="text-[10px] text-muted-foreground">{t("runtime:noProvider")}</span>
-        )}
-      </div>
-      {trailing}
-    </div>
-  );
-}
-
 interface RuntimeMatrixPickerProps {
   providers: ProviderInfo[];
   value: RuntimeMatrixValue;
@@ -738,6 +619,9 @@ interface RuntimeMatrixPickerProps {
   showRuntimeModeToggle?: boolean;
   className?: string;
   emptyText?: string;
+  /** Rendered right-aligned at the end of the sentence row (e.g. the
+   *  composer's "App default" reset pill). */
+  trailing?: React.ReactNode;
 }
 
 /**
@@ -755,6 +639,7 @@ export function RuntimeMatrixPicker({
   showRuntimeModeToggle = false,
   className,
   emptyText = "No providers available.",
+  trailing,
 }: RuntimeMatrixPickerProps) {
   const { t } = useLocale();
   const runtimeMode: RuntimeMode = value.runtimeMode === "terminal" ? "terminal" : "native";
@@ -948,7 +833,7 @@ export function RuntimeMatrixPicker({
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border/70 bg-background">
+        <div className="overflow-hidden rounded-xl bg-card">
           <div className="flex items-center gap-x-1.5 whitespace-nowrap px-3 py-2.5 text-[12.5px] [&>span]:shrink-0">
             <span className="text-muted-foreground">
               {t("runtime:sentenceRunWith")}
@@ -1036,6 +921,9 @@ export function RuntimeMatrixPicker({
                 </span>
               </>
             )}
+            {trailing ? (
+              <span className="ms-auto shrink-0 ps-2">{trailing}</span>
+            ) : null}
           </div>
 
           {openPanel === "provider" && (
@@ -1571,64 +1459,8 @@ export function TaskRuntimePicker({
 
       <DropdownMenuContent
         align={align}
-        className="w-[min(38rem,calc(100vw-1rem))] min-w-[17rem] max-w-[calc(100vw-1rem)] p-0"
+        className="w-[min(43rem,calc(100vw-1rem))] min-w-[17rem] max-w-[calc(100vw-1rem)] p-0"
       >
-        <DropdownMenuGroup>
-          <RuntimeSelectionBanner
-            providers={providers}
-            value={{
-              providerId: normalizedValue.providerId,
-              model: normalizedValue.model,
-              effort: normalizedValue.effort,
-            }}
-            className="mx-1.5 mt-1.5"
-            trailing={
-              <div className="flex shrink-0 items-center gap-1">
-                <button
-                  type="button"
-                  className={cn(
-                    "shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-medium transition-colors",
-                    sameSelection(normalizedValue, appDefaultSelection)
-                      ? "border-foreground/20 bg-accent text-accent-foreground"
-                      : "border-border/70 bg-background text-muted-foreground hover:text-foreground"
-                  )}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    resetToDefault();
-                  }}
-                  title={[
-                    appDefaultModelInfo?.name || t("runtime:defaultModel"),
-                    appDefaultSelection.effort
-                      ? formatEffortName(appDefaultSelection.effort)
-                      : t("runtime:auto"),
-                    appDefaultProvider?.name || null,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                >
-                  {sameSelection(normalizedValue, appDefaultSelection)
-                    ? t("runtime:appDefault")
-                    : t("runtime:selectAppDefault")}
-                </button>
-                <button
-                  type="button"
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    setOpen(false);
-                  }}
-                  title={t("startWork:close")}
-                  aria-label={t("startWork:close")}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            }
-          />
-        </DropdownMenuGroup>
-
         <div className="px-0 pb-0">
           <RuntimeMatrixPicker
             providers={providers}
@@ -1641,6 +1473,35 @@ export function TaskRuntimePicker({
             showRuntimeModeToggle
             onChange={({ providerId, model, effort, runtimeMode }) =>
               applySelection(providerId, model, effort, runtimeMode)
+            }
+            trailing={
+              <button
+                type="button"
+                className={cn(
+                  "shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-medium transition-colors",
+                  sameSelection(normalizedValue, appDefaultSelection)
+                    ? "border-foreground/20 bg-accent text-accent-foreground"
+                    : "border-border/70 bg-background text-muted-foreground hover:text-foreground"
+                )}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  resetToDefault();
+                }}
+                title={[
+                  appDefaultModelInfo?.name || t("runtime:defaultModel"),
+                  appDefaultSelection.effort
+                    ? formatEffortName(appDefaultSelection.effort)
+                    : t("runtime:auto"),
+                  appDefaultProvider?.name || null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              >
+                {sameSelection(normalizedValue, appDefaultSelection)
+                  ? t("runtime:appDefault")
+                  : t("runtime:selectAppDefault")}
+              </button>
             }
           />
         </div>

@@ -58,10 +58,7 @@ import {
   type ThemeDefinition,
   type ThemeMode,
 } from "@/lib/themes";
-import {
-  RuntimeMatrixPicker,
-  RuntimeSelectionBanner,
-} from "@/components/composer/task-runtime-picker";
+import { RuntimeMatrixPicker } from "@/components/composer/task-runtime-picker";
 import { isAgentProviderSelectable } from "@/lib/agents/provider-filters";
 import { ProviderSetupSteps } from "@/components/settings/provider-setup-steps";
 import { ProviderGlyph } from "@/components/agents/provider-glyph";
@@ -1369,19 +1366,10 @@ export function SettingsPage() {
                 ) : (
                   <div className="space-y-3">
                     <div>
-                      <div className="mb-3 rounded-lg border border-card-edge bg-card p-3 space-y-2">
+                      <div className="mb-6 space-y-2">
                         <label className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                           {t("settings:providers.defaultRuntime")}
                         </label>
-                        <RuntimeSelectionBanner
-                          providers={providers}
-                          value={{
-                            providerId: defaultProvider || null,
-                            model: defaultModel || null,
-                            effort: defaultEffort || null,
-                          }}
-                          label={t("settings:providers.defaultModel")}
-                        />
                         <RuntimeMatrixPicker
                           providers={providers}
                           value={{
@@ -1430,7 +1418,7 @@ export function SettingsPage() {
                             return (
                               <div
                                 key={provider.id}
-                                className="bg-card border border-card-edge rounded-lg p-3 space-y-2"
+                                className="bg-card rounded-xl p-3 space-y-2"
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-3">
@@ -1679,7 +1667,7 @@ export function SettingsPage() {
                         ].map((p) => (
                           <div
                             key={p.name}
-                            className="flex items-center justify-between bg-card border border-card-edge rounded-lg p-3 opacity-50"
+                            className="flex items-center justify-between bg-card rounded-xl p-3 opacity-50"
                           >
                             <div className="flex items-center gap-3">
                               <XCircle className="h-4 w-4 text-muted-foreground" />
