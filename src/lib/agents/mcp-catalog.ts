@@ -832,6 +832,59 @@ const LINKEDIN: CatalogEntry = {
   ],
 };
 
+/**
+ * Meta's official hosted ads connector (beta, launched 2026-04-29).
+ *
+ * Public-client PKCE — `token_endpoint_auth_method: "none"`, so there is no
+ * secret anywhere and nothing for the user to paste. Meta's DCR is allowlisted
+ * by `client_name`: the Claude Code CLI registers fine under its own true name,
+ * which is why this works. Gemini/Codex are refused by Meta — the entry ships
+ * ungated anyway (see the spec), so connect succeeds via Claude Code but the
+ * server won't work for those agents at runtime.
+ *
+ * No `registryId`: Meta never listed this in the Official MCP Registry, and a
+ * generic id would substring-match a third party's listing and mint a false
+ * Official badge. Hence `trustTier: "vendor"`.
+ */
+const META_ADS: CatalogEntry = {
+  id: "meta-ads",
+  label: "Meta Ads",
+  blurb: "Report on, create, and manage Facebook & Instagram ad campaigns.",
+  iconSlug: "meta-ads",
+  bgImage: "/integrations/meta-ads-bg.webp",
+  logo: "/logos/meta.svg",
+  sourceUrl: "https://www.facebook.com/business/news/meta-ads-ai-connectors",
+  trustTier: "vendor",
+  vendorName: "Meta",
+  authBackend: "cli-pkce",
+  transport: "http",
+  mcpServerName: "cabinet-meta-ads",
+  url: "https://mcp.facebook.com/ads",
+  credentials: [],
+  actions: [
+    "Pull insights, benchmarks & performance trends",
+    "Create campaigns, ad sets, ads & creatives",
+    "Activate campaigns and boost posts (spends budget)",
+    "Manage catalogs, product feeds & pixels",
+    "Build & update custom audiences",
+  ],
+  setupSteps: [
+    {
+      title: "Requires the Claude Code provider",
+      body: "Meta's connector only admits the Claude Code CLI. Agents running on Gemini or Codex can't authenticate with it, so switch the agent's provider to Claude Code before connecting.",
+    },
+    {
+      title: "Sign in with Meta",
+      body: "Click Connect & sign in: your agent's CLI opens Meta in the browser to authorize your ad account. No developer app, no App Review, nothing to paste.",
+    },
+    {
+      title: "This grants write access, including spend",
+      body: "The connector exposes 82 tools, ~30 of which change things. An agent can create AND activate campaigns and boost Instagram posts, which spends real budget. Connect the ad account you actually intend an agent to act on.",
+      href: "https://www.facebook.com/business/news/meta-ads-ai-connectors",
+    },
+  ],
+};
+
 /** Official public remote (HTTP + the CLI's PKCE OAuth). Nothing to paste. */
 function officialRemote(o: {
   id: string;
@@ -1150,6 +1203,7 @@ export const MCP_CATALOG: CatalogEntry[] = [
   DISCORD,
   TELEGRAM,
   LINKEDIN,
+  META_ADS,
   ...EXTENDED,
 ];
 
